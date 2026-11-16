@@ -16,6 +16,7 @@ class AppProvider extends ChangeNotifier {
   List<Application> applications = [];
   List<Review> reviews = [];
   String? currentUserId;
+  bool hasSeenOnboarding = false;
   bool isLoaded = false;
 
   AppUser? get currentUser {
@@ -52,6 +53,8 @@ class AppProvider extends ChangeNotifier {
             .map((e) => Review.fromJson(e as Map<String, dynamic>))
             .toList();
         currentUserId = data['currentUserId'] as String?;
+        hasSeenOnboarding = data['hasSeenOnboarding'] as bool? ?? false;
+        _ensureDemoAccounts();
       } catch (_) {
         _seedData();
       }
@@ -70,15 +73,112 @@ class AppProvider extends ChangeNotifier {
       'applications': applications.map((e) => e.toJson()).toList(),
       'reviews': reviews.map((e) => e.toJson()).toList(),
       'currentUserId': currentUserId,
+      'hasSeenOnboarding': hasSeenOnboarding,
     };
     await prefs.setString(_storageKey, jsonEncode(data));
+  }
+
+  Future<void> setSeenOnboarding() async {
+    hasSeenOnboarding = true;
+    await saveData();
+    notifyListeners();
+  }
+
+  String? signUp({
+    required String name,
+    required String email,
+    required String password,
+    required UserRole role,
+    String? businessName,
+  }) {
+    final exists = users.any((u) => u.email.toLowerCase() == email.toLowerCase());
+    if (exists) return 'Email is already registered.';
+    final id = DateTime.now().millisecondsSinceEpoch.toString();
+    final user = AppUser(
+      id: id,
+      name: name,
+      email: email,
+      password: password,
+      role: role,
+      businessName: businessName,
+    );
+    users.add(user);
+    currentUserId = id;
+    saveData();
+    notifyListeners();
+    return null;
+  }
+
+  String? logIn(String email, String password) {
+    for (final u in users) {
+      if (u.email.toLowerCase() == email.toLowerCase() && u.password == password) {
+        currentUserId = u.id;
+        saveData();
+        notifyListeners();
+        return null;
+      }
+    }
+    return 'Wrong email or password.';
+  }
+
+  Future<void> logOut() async {
+    currentUserId = null;
+    await saveData();
+    notifyListeners();
+  }
+
+  void _ensureDemoAccounts() {
+    if (!users.any((u) => u.email == 'seeker@demo.com')) {
+      users.add(AppUser(
+        id: 'demo_seeker',
+        name: 'Demo Seeker',
+        email: 'seeker@demo.com',
+        password: '123456',
+        role: UserRole.seeker,
+        location: 'Davao City',
+        openToWork: true,
+      ));
+    }
+    if (!users.any((u) => u.email == 'employer@demo.com')) {
+      users.add(AppUser(
+        id: 'demo_employer',
+        name: 'Demo Employer',
+        email: 'employer@demo.com',
+        password: '123456',
+        role: UserRole.employer,
+        businessName: 'Demo Business',
+        location: 'Davao City',
+      ));
+    }
   }
 
   void _seedData() {
     users = [
       AppUser(
+        id: 'demo_seeker',
+        name: 'Demo Seeker',
+        email: 'seeker@demo.com',
+        password: '123456',
+        role: UserRole.seeker,
+        bio: 'Demo job seeker account.',
+        openToWork: true,
+        location: 'Davao City',
+      ),
+      AppUser(
+        id: 'demo_employer',
+        name: 'Demo Employer',
+        email: 'employer@demo.com',
+        password: '123456',
+        role: UserRole.employer,
+        bio: 'Demo business owner account.',
+        businessName: 'Demo Business',
+        location: 'Davao City',
+      ),
+      AppUser(
         id: 's1',
         name: 'Maria Santos',
+        email: 'maria@example.com',
+        password: '123456',
         role: UserRole.seeker,
         bio: 'Hardworking cook with 5 years experience.',
         skills: ['Cooking', 'Food Prep', 'Cleaning'],
@@ -89,6 +189,8 @@ class AppProvider extends ChangeNotifier {
       AppUser(
         id: 's2',
         name: 'Juan Dela Cruz',
+        email: 'juan@example.com',
+        password: '123456',
         role: UserRole.seeker,
         bio: 'Experienced driver and delivery rider.',
         skills: ['Driving', 'Delivery', 'Navigation'],
@@ -99,6 +201,8 @@ class AppProvider extends ChangeNotifier {
       AppUser(
         id: 's3',
         name: 'Ana Reyes',
+        email: 'ana@example.com',
+        password: '123456',
         role: UserRole.seeker,
         bio: 'Detail-oriented housekeeper.',
         skills: ['Housekeeping', 'Laundry', 'Childcare'],
@@ -108,6 +212,8 @@ class AppProvider extends ChangeNotifier {
       AppUser(
         id: 's4',
         name: 'Carlo Mendoza',
+        email: 'carlo@example.com',
+        password: '123456',
         role: UserRole.seeker,
         bio: 'Skilled carpenter and handyman.',
         skills: ['Carpentry', 'Painting', 'Repairs'],
@@ -118,6 +224,8 @@ class AppProvider extends ChangeNotifier {
       AppUser(
         id: 's5',
         name: 'Liza Gomez',
+        email: 'liza@example.com',
+        password: '123456',
         role: UserRole.seeker,
         bio: 'Friendly sales assistant and cashier.',
         skills: ['Sales', 'Cashiering', 'Customer Service'],
@@ -127,6 +235,8 @@ class AppProvider extends ChangeNotifier {
       AppUser(
         id: 's6',
         name: 'Ramon Villanueva',
+        email: 'ramon@example.com',
+        password: '123456',
         role: UserRole.seeker,
         bio: 'Construction worker and welder.',
         skills: ['Welding', 'Construction', 'Masonry'],
@@ -136,6 +246,8 @@ class AppProvider extends ChangeNotifier {
       AppUser(
         id: 'e1',
         name: 'Elena Cruz',
+        email: 'elena@example.com',
+        password: '123456',
         role: UserRole.employer,
         bio: 'Owner of a local eatery.',
         businessName: 'Lola Elena Carinderia',
@@ -144,6 +256,8 @@ class AppProvider extends ChangeNotifier {
       AppUser(
         id: 'e2',
         name: 'Mark Tan',
+        email: 'mark@example.com',
+        password: '123456',
         role: UserRole.employer,
         bio: 'Managing small retail shops.',
         businessName: 'Tan Sari-Sari & Supplies',
@@ -152,6 +266,8 @@ class AppProvider extends ChangeNotifier {
       AppUser(
         id: 'e3',
         name: 'Rosa Lim',
+        email: 'rosa@example.com',
+        password: '123456',
         role: UserRole.employer,
         bio: 'Runs a cleaning service in Davao.',
         businessName: 'Sparkle Clean Davao',
@@ -160,6 +276,8 @@ class AppProvider extends ChangeNotifier {
       AppUser(
         id: 'e4',
         name: 'Pedro Alvarez',
+        email: 'pedro@example.com',
+        password: '123456',
         role: UserRole.employer,
         bio: 'Construction contractor.',
         businessName: 'Alvarez Builders',
@@ -293,5 +411,6 @@ class AppProvider extends ChangeNotifier {
     ];
 
     currentUserId = null;
+    hasSeenOnboarding = false;
   }
 }

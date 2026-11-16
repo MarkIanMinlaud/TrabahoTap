@@ -3,6 +3,8 @@ enum UserRole { seeker, employer }
 class AppUser {
   final String id;
   final String name;
+  final String email;
+  final String password;
   final UserRole role;
   final String bio;
   final List<String> skills;
@@ -14,6 +16,8 @@ class AppUser {
   AppUser({
     required this.id,
     required this.name,
+    required this.email,
+    required this.password,
     required this.role,
     this.bio = '',
     this.skills = const [],
@@ -26,6 +30,8 @@ class AppUser {
   AppUser copyWith({
     String? id,
     String? name,
+    String? email,
+    String? password,
     UserRole? role,
     String? bio,
     List<String>? skills,
@@ -37,6 +43,8 @@ class AppUser {
     return AppUser(
       id: id ?? this.id,
       name: name ?? this.name,
+      email: email ?? this.email,
+      password: password ?? this.password,
       role: role ?? this.role,
       bio: bio ?? this.bio,
       skills: skills ?? this.skills,
@@ -51,6 +59,8 @@ class AppUser {
     return {
       'id': id,
       'name': name,
+      'email': email,
+      'password': password,
       'role': role.name,
       'bio': bio,
       'skills': skills,
@@ -65,6 +75,8 @@ class AppUser {
     return AppUser(
       id: json['id'] as String,
       name: json['name'] as String,
+      email: json['email'] as String? ?? '',
+      password: json['password'] as String? ?? '',
       role: UserRole.values.firstWhere((r) => r.name == json['role']),
       bio: json['bio'] as String? ?? '',
       skills: List<String>.from(json['skills'] as List? ?? []),

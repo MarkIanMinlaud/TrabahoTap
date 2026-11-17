@@ -6,6 +6,8 @@ class Job {
   final String description;
   final String employerId;
   final DateTime createdAt;
+  final int vacancies;
+  final bool isFull;
 
   Job({
     required this.id,
@@ -15,7 +17,26 @@ class Job {
     required this.description,
     required this.employerId,
     required this.createdAt,
+    this.vacancies = 1,
+    this.isFull = false,
   });
+
+  Job copyWith({
+    int? vacancies,
+    bool? isFull,
+  }) {
+    return Job(
+      id: id,
+      title: title,
+      category: category,
+      pay: pay,
+      description: description,
+      employerId: employerId,
+      createdAt: createdAt,
+      vacancies: vacancies ?? this.vacancies,
+      isFull: isFull ?? this.isFull,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -26,6 +47,8 @@ class Job {
       'description': description,
       'employerId': employerId,
       'createdAt': createdAt.toIso8601String(),
+      'vacancies': vacancies,
+      'isFull': isFull,
     };
   }
 
@@ -38,6 +61,9 @@ class Job {
       description: json['description'] as String,
       employerId: json['employerId'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      // Older saved jobs do not have these keys, so keep safe defaults.
+      vacancies: (json['vacancies'] as num?)?.toInt() ?? 1,
+      isFull: json['isFull'] as bool? ?? false,
     );
   }
 }

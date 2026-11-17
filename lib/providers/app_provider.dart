@@ -83,12 +83,21 @@ class AppProvider extends ChangeNotifier {
     );
   }
 
+  // Number of workers already hired for a job.
+  int hiredCount(String jobId) {
+    return applications
+        .where((a) => a.jobId == jobId && a.status == ApplicationStatus.hired)
+        .length;
+  }
+
   List<Application> applicationsForSeeker(String seekerId) {
     return applications.where((a) => a.seekerId == seekerId).toList().reversed.toList();
   }
 
-  Future<void> applyToJob(String seekerId, String jobId) async {
-    if (hasApplied(seekerId, jobId)) return;
+  Future<bool> applyToJob(String seekerId, String jobId) async {
+    final job = jobById(jobId);
+    if (job == null || job.isFull) return false;
+    if (hasApplied(seekerId, jobId)) return false;
     final app = Application(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       jobId: jobId,
@@ -98,6 +107,7 @@ class AppProvider extends ChangeNotifier {
     applications.add(app);
     await saveData();
     notifyListeners();
+    return true;
   }
 
   Future<void> cancelApplication(String applicationId) async {
@@ -133,6 +143,7 @@ class AppProvider extends ChangeNotifier {
     required String pay,
     required String description,
     required String employerId,
+    int vacancies = 1,
   }) async {
     final job = Job(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -142,10 +153,24 @@ class AppProvider extends ChangeNotifier {
       description: description,
       employerId: employerId,
       createdAt: DateTime.now(),
+      vacancies: vacancies < 1 ? 1 : vacancies,
     );
     jobs.add(job);
     await saveData();
     notifyListeners();
+  }
+
+  // Employers can open or close their own job to new applicants.
+  Future<bool> setJobFull(String jobId, bool isFull) async {
+    final user = currentUser;
+    if (user == null || user.role != UserRole.employer) return false;
+    final index = jobs.indexWhere((j) => j.id == jobId);
+    if (index == -1 || jobs[index].employerId != user.id) return false;
+
+    jobs[index] = jobs[index].copyWith(isFull: isFull);
+    await saveData();
+    notifyListeners();
+    return true;
   }
 
   // Delete a job only if the current user owns it.
@@ -168,6 +193,19 @@ class AppProvider extends ChangeNotifier {
     final index = applications.indexWhere((a) => a.id == applicationId);
     if (index == -1) return;
     applications[index] = applications[index].copyWith(status: status);
+
+    // Close the job automatically once all vacancies are filled.
+    if (status == ApplicationStatus.hired) {
+      final jobId = applications[index].jobId;
+      final jobIndex = jobs.indexWhere((j) => j.id == jobId);
+      if (jobIndex != -1) {
+        final job = jobs[jobIndex];
+        if (!job.isFull && hiredCount(jobId) >= job.vacancies) {
+          jobs[jobIndex] = job.copyWith(isFull: true);
+        }
+      }
+    }
+
     await saveData();
     notifyListeners();
   }
@@ -511,6 +549,7 @@ class AppProvider extends ChangeNotifier {
         description: 'Assist in food prep and kitchen cleaning at our carinderia.',
         employerId: 'e1',
         createdAt: DateTime(2026, 11, 10),
+        vacancies: 2,
       ),
       Job(
         id: 'j2',
@@ -520,6 +559,7 @@ class AppProvider extends ChangeNotifier {
         description: 'Handle cash register and assist customers in our store.',
         employerId: 'e2',
         createdAt: DateTime(2026, 11, 9),
+        vacancies: 1,
       ),
       Job(
         id: 'j3',
@@ -529,6 +569,7 @@ class AppProvider extends ChangeNotifier {
         description: 'Part-time house cleaning for residential clients in Matina.',
         employerId: 'e3',
         createdAt: DateTime(2026, 11, 8),
+        vacancies: 2,
       ),
       Job(
         id: 'j4',
@@ -538,6 +579,7 @@ class AppProvider extends ChangeNotifier {
         description: 'Deliver supplies around Davao City. Own motorcycle preferred.',
         employerId: 'e2',
         createdAt: DateTime(2026, 11, 11),
+        vacancies: 1,
       ),
       Job(
         id: 'j5',
@@ -547,6 +589,7 @@ class AppProvider extends ChangeNotifier {
         description: 'Assist skilled workers at a site in Buhangin.',
         employerId: 'e4',
         createdAt: DateTime(2026, 11, 7),
+        vacancies: 3,
       ),
       Job(
         id: 'j6',
@@ -556,6 +599,7 @@ class AppProvider extends ChangeNotifier {
         description: 'Cook Filipino dishes for lunch service in Poblacion.',
         employerId: 'e1',
         createdAt: DateTime(2026, 11, 12),
+        vacancies: 1,
       ),
       Job(
         id: 'j7',
@@ -565,6 +609,7 @@ class AppProvider extends ChangeNotifier {
         description: 'Stock shelves and help with inventory in Lanang.',
         employerId: 'e2',
         createdAt: DateTime(2026, 11, 6),
+        vacancies: 2,
       ),
       Job(
         id: 'j8',
@@ -574,6 +619,7 @@ class AppProvider extends ChangeNotifier {
         description: 'Night shift cleaning for a small office in Matina.',
         employerId: 'e3',
         createdAt: DateTime(2026, 11, 5),
+        vacancies: 1,
       ),
       Job(
         id: 'j9',
@@ -583,6 +629,7 @@ class AppProvider extends ChangeNotifier {
         description: 'Experienced welder needed for a residential project.',
         employerId: 'e4',
         createdAt: DateTime(2026, 11, 13),
+        vacancies: 1,
       ),
       Job(
         id: 'j10',
@@ -592,6 +639,7 @@ class AppProvider extends ChangeNotifier {
         description: 'Keep dishes and kitchen area clean during peak hours.',
         employerId: 'e1',
         createdAt: DateTime(2026, 11, 14),
+        vacancies: 2,
       ),
     ];
 

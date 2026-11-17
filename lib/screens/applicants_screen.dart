@@ -7,6 +7,7 @@ import '../models/job.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/delete_job_dialog.dart';
+import '../widgets/job_status_chip.dart';
 import '../widgets/star_rating.dart';
 import 'rating_dialog.dart';
 import 'talent_detail_screen.dart';
@@ -118,12 +119,30 @@ class ApplicantsScreen extends StatelessWidget {
             ),
         ],
       ),
-      body: applicants.isEmpty
-          ? const Center(child: Text('No applicants yet', style: TextStyle(color: AppColors.textSecondary)))
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: applicants.length,
-              itemBuilder: (itemContext, i) {
+      body: Column(
+        children: [
+          if (job != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  JobStatusChip(
+                    job: job,
+                    hiredCount: app.hiredCount(job.id),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  JobFullToggleButton(job: job),
+                ],
+              ),
+            ),
+          Expanded(
+            child: applicants.isEmpty
+                ? const Center(child: Text('No applicants yet', style: TextStyle(color: AppColors.textSecondary)))
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: applicants.length,
+                    itemBuilder: (itemContext, i) {
                 final a = applicants[i];
                 final seeker = app.userById(a.seekerId);
                 if (seeker == null) return const SizedBox.shrink();
@@ -248,6 +267,9 @@ class ApplicantsScreen extends StatelessWidget {
                 );
               },
             ),
+          ),
+        ],
+      ),
     );
   }
 }

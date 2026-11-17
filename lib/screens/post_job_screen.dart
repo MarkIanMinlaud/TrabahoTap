@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
@@ -17,6 +18,7 @@ class _PostJobScreenState extends State<PostJobScreen> {
   final _formKey = GlobalKey<FormState>();
   final _title = TextEditingController();
   final _pay = TextEditingController();
+  final _vacancies = TextEditingController(text: '1');
   final _description = TextEditingController();
   String _category = 'Construction';
 
@@ -35,6 +37,7 @@ class _PostJobScreenState extends State<PostJobScreen> {
   void dispose() {
     _title.dispose();
     _pay.dispose();
+    _vacancies.dispose();
     _description.dispose();
     super.dispose();
   }
@@ -51,10 +54,12 @@ class _PostJobScreenState extends State<PostJobScreen> {
       pay: _pay.text.trim(),
       description: _description.text.trim(),
       employerId: employer.id,
+      vacancies: int.parse(_vacancies.text.trim()),
     );
 
     _title.clear();
     _pay.clear();
+    _vacancies.text = '1';
     _description.clear();
     setState(() => _category = 'Construction');
 
@@ -124,6 +129,22 @@ class _PostJobScreenState extends State<PostJobScreen> {
                 controller: _pay,
                 decoration: const InputDecoration(hintText: 'Pay (e.g. PHP 500/day)'),
                 validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _vacancies,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: const InputDecoration(
+                  hintText: 'How many workers do you need?',
+                ),
+                validator: (v) {
+                  final count = int.tryParse(v?.trim() ?? '');
+                  if (count == null || count < 1) {
+                    return 'Enter at least 1';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 12),
               TextFormField(

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/job.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
+import 'job_status_chip.dart';
 import 'star_rating.dart';
 
 class JobCard extends StatelessWidget {
@@ -64,7 +65,23 @@ class JobCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(job.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text)),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            job.title,
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text),
+                          ),
+                        ),
+                        if (job.isFull) ...[
+                          const SizedBox(width: AppSpacing.sm),
+                          JobStatusChip(
+                            job: job,
+                            hiredCount: app.hiredCount(job.id),
+                          ),
+                        ],
+                      ],
+                    ),
                     const SizedBox(height: 4),
                     Text(employer?.businessName ?? employer?.name ?? 'Employer', style: const TextStyle(color: AppColors.textSecondary)),
                     const SizedBox(height: 4),

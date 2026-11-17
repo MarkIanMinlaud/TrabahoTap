@@ -8,6 +8,8 @@ class AppColors {
   static const Color inputFill = Color(0xFFF5F5F5);
   static const Color background = Colors.white;
   static const Color danger = Color(0xFFD32F2F);
+  static const Color success = Color(0xFF2E7D32);
+  static const Color successSoft = Color(0xFFE8F5E9);
   static const Color neutral = Color(0xFF9E9E9E);
 }
 

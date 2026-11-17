@@ -5,6 +5,7 @@ import '../models/application.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/delete_job_dialog.dart';
+import '../widgets/job_status_chip.dart';
 import 'applicants_screen.dart';
 
 class MyJobsScreen extends StatelessWidget {
@@ -93,15 +94,28 @@ class MyJobsScreen extends StatelessWidget {
                                   const SizedBox(height: 4),
                                   Text(job.pay, style: const TextStyle(color: AppColors.textSecondary)),
                                   const SizedBox(height: 8),
-                                  Row(
+                                  Wrap(
+                                    spacing: AppSpacing.sm,
+                                    runSpacing: AppSpacing.sm,
+                                    crossAxisAlignment: WrapCrossAlignment.center,
                                     children: [
+                                      JobStatusChip(
+                                        job: job,
+                                        hiredCount: app.hiredCount(job.id),
+                                      ),
                                       Chip(
                                         label: Text('$count applicants'),
                                         backgroundColor: AppColors.primary,
                                         side: BorderSide.none,
                                         labelStyle: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.text),
                                       ),
-                                      const SizedBox(width: 12),
+                                    ],
+                                  ),
+                                  const SizedBox(height: AppSpacing.md),
+                                  Row(
+                                    children: [
+                                      Expanded(child: JobFullToggleButton(job: job)),
+                                      const SizedBox(width: AppSpacing.md),
                                       SizedBox(
                                         width: 48,
                                         height: 48,

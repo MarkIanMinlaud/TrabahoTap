@@ -53,7 +53,11 @@ class _JobsScreenState extends State<JobsScreen> {
     final app = context.watch<AppProvider>();
     final user = app.currentUser;
     final jobs = app.jobs.where((j) => _matches(j, app)).toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      ..sort((a, b) {
+        // Keep full jobs at the bottom of the list.
+        if (a.isFull != b.isFull) return a.isFull ? 1 : -1;
+        return b.createdAt.compareTo(a.createdAt);
+      });
 
     return SafeArea(
       child: Padding(

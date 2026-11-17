@@ -24,8 +24,9 @@ class TalentDetailScreen extends StatelessWidget {
     final employer = app.currentUser;
     if (employer == null) return;
     final myJobs = app.jobsForEmployer(employer.id);
+    final openJobs = myJobs.where((job) => !job.isFull).toList();
 
-    if (myJobs.isEmpty) {
+    if (openJobs.isEmpty) {
       showModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -34,7 +35,7 @@ class TalentDetailScreen extends StatelessWidget {
         builder: (ctx) => const Padding(
           padding: EdgeInsets.all(24),
           child: Text(
-            'Post a job first',
+            'No open jobs',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
         ),
@@ -56,7 +57,7 @@ class TalentDetailScreen extends StatelessWidget {
             children: [
               const Text('Select a job', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
-              ...myJobs.map((job) => ListTile(
+              ...openJobs.map((job) => ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(job.title),
                     subtitle: Text(job.pay),

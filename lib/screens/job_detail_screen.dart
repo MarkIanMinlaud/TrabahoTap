@@ -14,8 +14,14 @@ class JobDetailScreen extends StatelessWidget {
   Future<void> _apply(BuildContext context) async {
     final app = context.read<AppProvider>();
     final seekerId = app.currentUser!.id;
-    await app.applyToJob(seekerId, job.id);
+    final applied = await app.applyToJob(seekerId, job.id);
     if (!context.mounted) return;
+    if (!applied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('This employer is no longer accepting applicants')),
+      );
+      return;
+    }
     showDialog(
       context: context,
       barrierColor: Colors.black54,
@@ -47,6 +53,7 @@ class JobDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = context.watch<AppProvider>();
+    final currentJob = app.jobById(job.id) ?? job;
     final employer = app.employerFor(job);
     final seekerId = app.currentUser?.id ?? '';
     final applied = app.hasApplied(seekerId, job.id);
@@ -119,13 +126,37 @@ class JobDetailScreen extends StatelessWidget {
               child: applied
                   ? ElevatedButton(
                       onPressed: null,
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.grey.shade300),
+                      style: ElevatedButton.styleFrom(
+                        disabledBackgroundColor: Colors.grey.shade300,
+                        disabledForegroundColor: AppColors.textSecondary,
+                      ),
                       child: const Text('Applied'),
                     )
-                  : ElevatedButton(
-                      onPressed: () => _apply(context),
-                      child: const Text('Apply Now'),
-                    ),
+                  : currentJob.isFull
+                      ? Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const Text(
+                              'This employer is no longer accepting applicants',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            ElevatedButton(
+                              onPressed: null,
+                              style: ElevatedButton.styleFrom(
+                                disabledBackgroundColor: Colors.grey.shade300,
+                                disabledForegroundColor: AppColors.textSecondary,
+                              ),
+                              child: const Text('Position Filled'),
+                            ),
+                          ],
+                        )
+                      : ElevatedButton(
+                          onPressed: () => _apply(context),
+                          child: const Text('Apply Now'),
+                        ),
             ),
           ),
         ],

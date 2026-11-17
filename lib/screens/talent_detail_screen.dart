@@ -7,18 +7,12 @@ import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/star_rating.dart';
+import '../widgets/user_avatar.dart';
 
 class TalentDetailScreen extends StatelessWidget {
   final String seekerId;
 
   const TalentDetailScreen({super.key, required this.seekerId});
-
-  String _initials(String name) {
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.isEmpty || parts.first.isEmpty) return 'U';
-    if (parts.length == 1) return parts.first[0].toUpperCase();
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
 
   Future<void> _invite(BuildContext context, AppUser seeker) async {
     final app = context.read<AppProvider>();
@@ -157,17 +151,10 @@ class TalentDetailScreen extends StatelessWidget {
                   Center(
                     child: Column(
                       children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundColor: AppColors.primary,
-                          child: Text(
-                            _initials(seeker.name),
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.text,
-                            ),
-                          ),
+                        UserAvatar(
+                          name: seeker.name,
+                          photoBase64: seeker.photoBase64,
+                          size: 80,
                         ),
                         const SizedBox(height: AppSpacing.md),
                         Text(

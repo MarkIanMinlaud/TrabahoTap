@@ -10,6 +10,7 @@ import '../widgets/delete_job_dialog.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/job_status_chip.dart';
 import '../widgets/star_rating.dart';
+import '../widgets/user_avatar.dart';
 import 'rating_dialog.dart';
 import 'talent_detail_screen.dart';
 
@@ -17,13 +18,6 @@ class ApplicantsScreen extends StatelessWidget {
   final String jobId;
 
   const ApplicantsScreen({super.key, required this.jobId});
-
-  String _initials(String name) {
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.isEmpty || parts.first.isEmpty) return 'U';
-    if (parts.length == 1) return parts.first[0].toUpperCase();
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
 
   Color _statusColor(ApplicationStatus status) {
     switch (status) {
@@ -193,16 +187,10 @@ class ApplicantsScreen extends StatelessWidget {
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    CircleAvatar(
-                                      radius: 22,
-                                      backgroundColor: AppColors.primary,
-                                      child: Text(
-                                        _initials(seeker.name),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.text,
-                                        ),
-                                      ),
+                                    UserAvatar(
+                                      name: seeker.name,
+                                      photoBase64: seeker.photoBase64,
+                                      size: 44,
                                     ),
                                     const SizedBox(width: AppSpacing.md),
                                     Expanded(
@@ -210,11 +198,25 @@ class ApplicantsScreen extends StatelessWidget {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            seeker.name,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: AppTextStyles.cardTitle,
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  seeker.name,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style:
+                                                      AppTextStyles.cardTitle,
+                                                ),
+                                              ),
+                                              if (seeker.hasPhoto) ...[
+                                                const SizedBox(
+                                                  width: AppSpacing.sm,
+                                                ),
+                                                const PhotoVerifiedBadge(),
+                                              ],
+                                            ],
                                           ),
                                           const SizedBox(height: AppSpacing.xs),
                                           StarRating(rating: avg, count: count),

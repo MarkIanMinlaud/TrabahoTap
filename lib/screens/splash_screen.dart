@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import '../models/app_user.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
-import 'home_placeholder_screen.dart';
+import 'employer_shell.dart';
 import 'onboarding_screen.dart';
 import 'role_select_screen.dart';
 import 'seeker_shell.dart';
@@ -34,7 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
     } else if (app.currentUser != null) {
       next = app.currentUser!.role == UserRole.seeker
           ? const SeekerShell()
-          : const HomePlaceholderScreen();
+          : const EmployerShell();
     } else {
       next = const RoleSelectScreen();
     }

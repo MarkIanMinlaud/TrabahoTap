@@ -4,8 +4,9 @@ import 'package:provider/provider.dart';
 import '../models/app_user.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
-import 'home_placeholder_screen.dart';
+import 'employer_shell.dart';
 import 'login_screen.dart';
+import 'seeker_shell.dart';
 
 class SignUpScreen extends StatefulWidget {
   final UserRole role;
@@ -95,9 +96,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
       ),
     );
-    if (!mounted) return;
+    if (!mounted || !context.mounted) return;
+    final user = app.currentUser;
+    final next = user?.role == UserRole.employer
+        ? const EmployerShell()
+        : const SeekerShell();
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const HomePlaceholderScreen()),
+      MaterialPageRoute(builder: (_) => next),
       (route) => false,
     );
   }

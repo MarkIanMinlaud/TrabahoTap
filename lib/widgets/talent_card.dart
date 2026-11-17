@@ -4,6 +4,7 @@ import '../models/app_user.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
 import 'star_rating.dart';
+import 'user_avatar.dart';
 
 class TalentCard extends StatelessWidget {
   final AppUser seeker;
@@ -16,13 +17,6 @@ class TalentCard extends StatelessWidget {
     required this.app,
     required this.onTap,
   });
-
-  String _initials(String name) {
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.isEmpty || parts.first.isEmpty) return 'U';
-    if (parts.length == 1) return parts.first[0].toUpperCase();
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,16 +34,10 @@ class TalentCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: AppColors.primary,
-                child: Text(
-                  _initials(seeker.name),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.text,
-                  ),
-                ),
+              UserAvatar(
+                name: seeker.name,
+                photoBase64: seeker.photoBase64,
+                size: 48,
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -66,6 +54,10 @@ class TalentCard extends StatelessWidget {
                             style: AppTextStyles.cardTitle,
                           ),
                         ),
+                        if (seeker.hasPhoto) ...[
+                          const SizedBox(width: AppSpacing.sm),
+                          const PhotoVerifiedBadge(),
+                        ],
                         if (seeker.openToWork) ...[
                           const SizedBox(width: AppSpacing.sm),
                           Container(

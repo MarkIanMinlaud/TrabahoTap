@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
@@ -7,6 +10,7 @@ import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/star_rating.dart';
+import '../widgets/user_avatar.dart';
 import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -56,13 +60,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-  String _initials(String name) {
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.isEmpty || parts.first.isEmpty) return 'U';
-    if (parts.length == 1) return parts.first[0].toUpperCase();
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-
   String _relativeDate(DateTime date) {
     final diff = DateTime.now().difference(date);
     if (diff.inSeconds < 60) return 'Just now';
@@ -98,6 +95,112 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SnackBar(content: Text('Could not open the file picker')),
       );
     }
+  }
+
+  Future<void> _showPhotoOptions() async {
+    final user = context.read<AppProvider>().currentUser;
+    if (user == null) return;
+    final hasPhoto = user.hasPhoto;
+
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radius),
+        ),
+      ),
+      builder: (ctx) => SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: AppColors.primary,
+                child: Icon(Icons.photo_camera, color: AppColors.text),
+              ),
+              title: const Text('Take a photo'),
+              onTap: () => Navigator.of(ctx).pop('camera'),
+            ),
+            ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: AppColors.primary,
+                child: Icon(Icons.photo_library, color: AppColors.text),
+              ),
+              title: const Text('Choose from gallery'),
+              onTap: () => Navigator.of(ctx).pop('gallery'),
+            ),
+            if (hasPhoto)
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: AppColors.primary,
+                  child: Icon(
+                    Icons.delete_outline,
+                    color: AppColors.danger,
+                  ),
+                ),
+                title: const Text(
+                  'Remove photo',
+                  style: TextStyle(color: AppColors.danger),
+                ),
+                onTap: () => Navigator.of(ctx).pop('remove'),
+              ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+        ),
+      ),
+    );
+
+    if (!context.mounted || action == null) return;
+    if (action == 'remove') {
+      await _removePhoto();
+    } else {
+      await _pickPhoto(
+        action == 'camera' ? ImageSource.camera : ImageSource.gallery,
+      );
+    }
+  }
+
+  Future<void> _pickPhoto(ImageSource source) async {
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: source,
+        maxWidth: 400,
+        maxHeight: 400,
+        imageQuality: 70,
+      );
+      if (picked == null) return;
+
+      final encoded = base64Encode(await picked.readAsBytes());
+      if (!mounted) return;
+
+      final app = context.read<AppProvider>();
+      final user = app.currentUser;
+      if (user == null) return;
+      await app.updateProfile(userId: user.id, photoBase64: encoded);
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Photo updated')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not update photo')),
+      );
+    }
+  }
+
+  Future<void> _removePhoto() async {
+    final app = context.read<AppProvider>();
+    final user = app.currentUser;
+    if (user == null) return;
+
+    await app.updateProfile(userId: user.id, clearPhoto: true);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Photo removed')),
+    );
   }
 
   Future<void> _save() async {
@@ -187,27 +290,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Center(
                 child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundColor: AppColors.primary,
-                      child: Text(
-                        _initials(user.name),
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.text,
-                        ),
+                    GestureDetector(
+                      onTap: _showPhotoOptions,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          UserAvatar(
+                            name: user.name,
+                            photoBase64: user.photoBase64,
+                            size: 80,
+                          ),
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AppColors.background,
+                                  width: 2,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.photo_camera,
+                                size: 16,
+                                color: AppColors.text,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: AppSpacing.md),
-                    Text(
-                      user.name,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.text,
-                      ),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: AppSpacing.sm,
+                      children: [
+                        Text(
+                          user.name,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.text,
+                          ),
+                        ),
+                        if (user.hasPhoto) const PhotoVerifiedBadge(),
+                      ],
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Container(
@@ -239,6 +371,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
+              if (!user.hasPhoto) ...[
+                const SizedBox(height: AppSpacing.lg),
+                InkWell(
+                  borderRadius: BorderRadius.circular(AppSpacing.radius),
+                  onTap: _showPhotoOptions,
+                  child: Container(
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    decoration: BoxDecoration(
+                      color: AppColors.cream,
+                      borderRadius: BorderRadius.circular(AppSpacing.radius),
+                    ),
+                    child: const Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: AppColors.primary,
+                          child: Icon(
+                            Icons.photo_camera,
+                            color: AppColors.text,
+                          ),
+                        ),
+                        SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Text(
+                            'Add a profile photo so others know you are real. '
+                            'Profiles with photos build more trust.',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: AppColors.text,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: AppSpacing.xl),
               Text(
                 isSeeker ? 'Edit Profile' : 'Business Details',
@@ -494,17 +663,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         children: [
                           Row(
                             children: [
-                              CircleAvatar(
-                                radius: 16,
-                                backgroundColor: AppColors.cream,
-                                child: Text(
-                                  _initials(reviewer?.name ?? 'User'),
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.text,
-                                  ),
-                                ),
+                              UserAvatar(
+                                name: reviewer?.name ?? 'User',
+                                photoBase64: reviewer?.photoBase64,
+                                size: 32,
                               ),
                               const SizedBox(width: AppSpacing.sm),
                               Expanded(

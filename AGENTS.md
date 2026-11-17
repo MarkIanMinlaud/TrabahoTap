@@ -11,7 +11,7 @@
 - Folders: lib/models, lib/providers, lib/screens, lib/widgets, lib/theme.
 - Keep the code simple and beginner-friendly, with short comments.
 - Run `flutter analyze` after changes and fix errors.
-- Do not add packages unless asked. Allowed: provider, shared_preferences, file_picker.
+- Do not add packages unless asked. Allowed: provider, shared_preferences, file_picker, image_picker.
 - Before each big task, explain your plan in 5 bullets, then implement.
 
 ## Design system (copied from the Taxio reference UI)

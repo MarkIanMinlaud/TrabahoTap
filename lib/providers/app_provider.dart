@@ -254,6 +254,12 @@ class AppProvider extends ChangeNotifier {
     String? location,
     String? resumeFileName,
     bool clearResume = false,
+    String? photoBase64,
+    bool clearPhoto = false,
+    String? contactNumber,
+    String? contactEmail,
+    String? contactLink,
+    bool? showContact,
   }) async {
     final index = users.indexWhere((u) => u.id == userId);
     if (index == -1) return;
@@ -272,6 +278,11 @@ class AppProvider extends ChangeNotifier {
       openToWork: openToWork ?? old.openToWork,
       businessName: businessName ?? old.businessName,
       location: location ?? old.location,
+      photoBase64: clearPhoto ? null : (photoBase64 ?? old.photoBase64),
+      contactNumber: contactNumber ?? old.contactNumber,
+      contactEmail: contactEmail ?? old.contactEmail,
+      contactLink: contactLink ?? old.contactLink,
+      showContact: showContact ?? old.showContact,
     );
     await saveData();
     notifyListeners();

@@ -5,6 +5,7 @@ import '../models/job.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/star_rating.dart';
+import '../widgets/user_avatar.dart';
 
 class JobDetailScreen extends StatelessWidget {
   final Job job;
@@ -109,10 +110,10 @@ class JobDetailScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(AppSpacing.lg),
                       child: Row(
                         children: [
-                          const CircleAvatar(
-                            radius: 24,
-                            backgroundColor: AppColors.primary,
-                            child: Icon(Icons.business, color: AppColors.text),
+                          UserAvatar(
+                            name: employer?.name ?? 'Employer',
+                            photoBase64: employer?.photoBase64,
+                            size: 48,
                           ),
                           const SizedBox(width: AppSpacing.md),
                           Expanded(

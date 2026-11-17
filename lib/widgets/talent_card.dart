@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../models/app_user.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
+import 'star_rating.dart';
 
 class TalentCard extends StatelessWidget {
   final AppUser seeker;
@@ -25,8 +26,8 @@ class TalentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final avg = app.averageRatingFor(seeker.id);
-    final count = app.reviewCountFor(seeker.id);
+    final avg = app.averageRating(seeker.id);
+    final count = app.reviewCount(seeker.id);
     final skills = seeker.skills.take(3).toList();
 
     return Card(
@@ -99,16 +100,7 @@ class TalentCard extends StatelessWidget {
                       ),
                     ],
                     const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(Icons.star, color: AppColors.primary, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          count == 0 ? 'No ratings yet' : '${avg.toStringAsFixed(1)} ($count)',
-                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                        ),
-                      ],
-                    ),
+                    StarRating(rating: avg, count: count),
                   ],
                 ),
               ),

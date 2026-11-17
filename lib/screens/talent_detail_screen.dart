@@ -5,6 +5,7 @@ import '../models/app_user.dart';
 import '../models/job.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/star_rating.dart';
 
 class TalentDetailScreen extends StatelessWidget {
   final String seekerId;
@@ -114,9 +115,9 @@ class TalentDetailScreen extends StatelessWidget {
     if (seeker == null) {
       return Scaffold(appBar: AppBar(), body: const Center(child: Text('User not found')));
     }
-    final avg = app.averageRatingFor(seeker.id);
-    final count = app.reviewCountFor(seeker.id);
-    final reviews = app.reviewsForUser(seeker.id);
+    final avg = app.averageRating(seeker.id);
+    final count = app.reviewCount(seeker.id);
+    final reviews = app.reviewsFor(seeker.id);
     final isEmployer = app.currentUser?.role == UserRole.employer;
 
     return Scaffold(
@@ -143,16 +144,11 @@ class TalentDetailScreen extends StatelessWidget {
                         const SizedBox(height: 12),
                         Text(seeker.name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.star, color: AppColors.primary, size: 18),
-                            const SizedBox(width: 4),
-                            Text(
-                              count == 0 ? 'No ratings yet' : '${avg.toStringAsFixed(1)} ($count reviews)',
-                              style: const TextStyle(color: AppColors.textSecondary),
-                            ),
-                          ],
+                        StarRating(
+                          rating: avg,
+                          count: count,
+                          size: 18,
+                          countSuffix: ' reviews',
                         ),
                       ],
                     ),
@@ -215,13 +211,10 @@ class TalentDetailScreen extends StatelessWidget {
                                 children: [
                                   Text(from?.name ?? 'User', style: const TextStyle(fontWeight: FontWeight.w600)),
                                   const Spacer(),
-                                  ...List.generate(
-                                    5,
-                                    (i) => Icon(
-                                      i < r.stars ? Icons.star : Icons.star_border,
-                                      color: AppColors.primary,
-                                      size: 16,
-                                    ),
+                                  StarRating(
+                                    rating: r.stars.toDouble(),
+                                    showValue: false,
+                                    showCount: false,
                                   ),
                                 ],
                               ),

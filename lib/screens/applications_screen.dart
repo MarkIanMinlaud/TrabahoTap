@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/application.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
+import 'rating_dialog.dart';
 
 class ApplicationsScreen extends StatelessWidget {
   const ApplicationsScreen({super.key});
@@ -85,6 +86,7 @@ class ApplicationsScreen extends StatelessWidget {
     final app = context.watch<AppProvider>();
     final user = app.currentUser;
     final apps = user == null ? <Application>[] : app.applicationsForSeeker(user.id);
+    final seekerId = user?.id ?? '';
 
     return SafeArea(
       child: Padding(
@@ -187,6 +189,30 @@ class ApplicationsScreen extends StatelessWidget {
                                     ],
                                   ],
                                 ),
+                                if (a.status == ApplicationStatus.hired && employer != null) ...[
+                                  const SizedBox(height: AppSpacing.md),
+                                  if (app.hasReviewed(seekerId, employer.id, a.jobId))
+                                    Container(
+                                      height: 48,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.inputFill,
+                                        borderRadius: BorderRadius.circular(999),
+                                      ),
+                                      child: const Text(
+                                        'Rated ✓',
+                                        style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                                      ),
+                                    )
+                                  else
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton(
+                                        onPressed: () => showRatingDialog(context, toUser: employer, jobId: a.jobId),
+                                        child: const Text('Rate Employer'),
+                                      ),
+                                    ),
+                                ],
                               ],
                             ),
                           ),

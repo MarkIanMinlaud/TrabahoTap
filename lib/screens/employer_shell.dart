@@ -1,9 +1,10 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../theme/app_theme.dart';
+import 'alerts_screen.dart';
 import 'my_jobs_screen.dart';
 import 'post_job_screen.dart';
-import 'profile_placeholder_screen.dart';
+import 'profile_screen.dart';
 import 'talent_screen.dart';
 
 class EmployerShell extends StatefulWidget {
@@ -29,7 +30,8 @@ class _EmployerShellState extends State<EmployerShell> {
           const TalentScreen(),
           MyJobsScreen(onPostJob: () => _switchTab(2)),
           PostJobScreen(onPosted: () => _switchTab(1)),
-          const ProfilePlaceholderScreen(),
+          const AlertsScreen(),
+          const ProfileScreen(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -51,6 +53,11 @@ class _EmployerShellState extends State<EmployerShell> {
             icon: Icon(Icons.add_circle_outline),
             selectedIcon: Icon(Icons.add_circle, color: AppColors.primary),
             label: 'Post Job',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.notifications_outlined),
+            selectedIcon: Icon(Icons.notifications, color: AppColors.primary),
+            label: 'Alerts',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),

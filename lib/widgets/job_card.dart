@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/job.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
+import 'star_rating.dart';
 
 class JobCard extends StatelessWidget {
   final Job job;
@@ -40,8 +41,8 @@ class JobCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = context.watch<AppProvider>();
     final employer = app.employerFor(job);
-    final avg = employer != null ? app.averageRatingFor(employer.id) : 0.0;
-    final count = employer != null ? app.reviewCountFor(employer.id) : 0;
+    final avg = employer != null ? app.averageRating(employer.id) : 0.0;
+    final count = employer != null ? app.reviewCount(employer.id) : 0;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -69,16 +70,7 @@ class JobCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(job.pay, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.text)),
                     const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        const Icon(Icons.star, color: AppColors.primary, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          count == 0 ? 'No ratings yet' : '${avg.toStringAsFixed(1)} ($count)',
-                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                        ),
-                      ],
-                    ),
+                    StarRating(rating: avg, count: count),
                   ],
                 ),
               ),

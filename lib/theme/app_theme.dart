@@ -7,6 +7,20 @@ class AppColors {
   static const Color cream = Color(0xFFFFF7E0);
   static const Color inputFill = Color(0xFFF5F5F5);
   static const Color background = Colors.white;
+  static const Color danger = Color(0xFFD32F2F);
+  static const Color neutral = Color(0xFF9E9E9E);
+}
+
+class AppSpacing {
+  static const double xs = 4;
+  static const double sm = 8;
+  static const double md = 12;
+  static const double lg = 16;
+  static const double xl = 24;
+  static const double xxl = 32;
+  static const double radius = 16;
+  static const double inputRadius = 12;
+  static const double buttonHeight = 54;
 }
 
 class AppTheme {

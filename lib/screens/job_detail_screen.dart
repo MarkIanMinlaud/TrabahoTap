@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/job.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/star_rating.dart';
 
 class JobDetailScreen extends StatelessWidget {
   final Job job;
@@ -49,8 +50,8 @@ class JobDetailScreen extends StatelessWidget {
     final employer = app.employerFor(job);
     final seekerId = app.currentUser?.id ?? '';
     final applied = app.hasApplied(seekerId, job.id);
-    final avg = employer != null ? app.averageRatingFor(employer.id) : 0.0;
-    final count = employer != null ? app.reviewCountFor(employer.id) : 0;
+    final avg = employer != null ? app.averageRating(employer.id) : 0.0;
+    final count = employer != null ? app.reviewCount(employer.id) : 0;
 
     return Scaffold(
       appBar: AppBar(leading: const BackButton()),
@@ -99,16 +100,7 @@ class JobDetailScreen extends StatelessWidget {
                                 Text(employer?.location ?? 'Davao City',
                                     style: const TextStyle(color: AppColors.textSecondary)),
                                 const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.star, color: AppColors.primary, size: 16),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      count == 0 ? 'No ratings yet' : '${avg.toStringAsFixed(1)} ($count reviews)',
-                                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                                    ),
-                                  ],
-                                ),
+                                StarRating(rating: avg, count: count, countSuffix: ' reviews'),
                               ],
                             ),
                           ),

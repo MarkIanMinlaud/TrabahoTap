@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
+import '../models/app_user.dart';
 import '../models/application.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
@@ -24,19 +25,29 @@ class AlertsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = context.watch<AppProvider>();
     final user = app.currentUser;
-    final apps = user == null ? <Application>[] : app.applicationsForSeeker(user.id);
-    final invites = user == null ? [] : app.invitesForSeeker(user.id);
+    final items = <_AlertItem>[];
 
-    final items = <_AlertItem>[
-      ...apps.map((a) {
+    if (user != null && user.role == UserRole.employer) {
+      for (final review in app.reviewsFor(user.id)) {
+        final reviewer = app.userById(review.fromUserId);
+        items.add(_AlertItem(
+          title: '${reviewer?.name ?? 'Someone'} rated you ${review.stars} stars',
+          date: review.createdAt,
+          jobId: review.jobId,
+        ));
+      }
+    } else if (user != null) {
+      final apps = app.applicationsForSeeker(user.id);
+      final invites = app.invitesForSeeker(user.id);
+      items.addAll(apps.map((a) {
         final job = app.jobs.firstWhere((j) => j.id == a.jobId, orElse: () => app.jobs.first);
         return _AlertItem(
           title: _messageFor(a.status, job.title),
           date: a.appliedAt,
           jobId: job.id,
         );
-      }),
-      ...invites.map((inv) {
+      }));
+      items.addAll(invites.map((inv) {
         final job = app.jobs.firstWhere((j) => j.id == inv.jobId, orElse: () => app.jobs.first);
         final employer = app.userById(inv.employerId);
         final name = employer?.businessName?.isNotEmpty == true ? employer!.businessName! : (employer?.name ?? 'An employer');
@@ -45,8 +56,18 @@ class AlertsScreen extends StatelessWidget {
           date: inv.createdAt,
           jobId: job.id,
         );
-      }),
-    ]..sort((a, b) => b.date.compareTo(a.date));
+      }));
+      for (final review in app.reviewsFor(user.id)) {
+        final reviewer = app.userById(review.fromUserId);
+        items.add(_AlertItem(
+          title: '${reviewer?.name ?? 'Someone'} rated you ${review.stars} stars',
+          date: review.createdAt,
+          jobId: review.jobId,
+        ));
+      }
+    }
+
+    items.sort((a, b) => b.date.compareTo(a.date));
 
     return SafeArea(
       child: Padding(
@@ -73,7 +94,7 @@ class AlertsScreen extends StatelessWidget {
                       separatorBuilder: (_, index) => const SizedBox(height: 8),
                       itemBuilder: (context, i) {
                         final item = items[i];
-                        final job = app.jobs.firstWhere((j) => j.id == item.jobId, orElse: () => app.jobs.first);
+                        final matches = app.jobs.where((j) => j.id == item.jobId).toList();
                         return ListTile(
                           tileColor: AppColors.cream,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -82,11 +103,13 @@ class AlertsScreen extends StatelessWidget {
                             child: Icon(Icons.notifications, color: AppColors.text),
                           ),
                           title: Text(item.title),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => JobDetailScreen(job: job)),
-                            );
-                          },
+                          onTap: matches.isEmpty
+                              ? null
+                              : () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(builder: (_) => JobDetailScreen(job: matches.first)),
+                                  );
+                                },
                         );
                       },
                     ),

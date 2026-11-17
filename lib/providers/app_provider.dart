@@ -29,15 +29,30 @@ class AppProvider extends ChangeNotifier {
     return null;
   }
 
-  double averageRatingFor(String userId) {
+  double averageRating(String userId) {
     final userReviews = reviews.where((r) => r.toUserId == userId).toList();
     if (userReviews.isEmpty) return 0;
     final total = userReviews.fold<int>(0, (sum, r) => sum + r.stars);
     return total / userReviews.length;
   }
 
-  int reviewCountFor(String userId) {
+  int reviewCount(String userId) {
     return reviews.where((r) => r.toUserId == userId).length;
+  }
+
+  List<Review> reviewsFor(String userId) {
+    final list = reviews.where((r) => r.toUserId == userId).toList();
+    list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return list;
+  }
+
+  bool hasReviewed(String fromUserId, String toUserId, String jobId) {
+    return reviews.any(
+      (r) =>
+          r.fromUserId == fromUserId &&
+          r.toUserId == toUserId &&
+          r.jobId == jobId,
+    );
   }
 
   AppUser? userById(String id) {
@@ -151,8 +166,58 @@ class AppProvider extends ChangeNotifier {
     return invites.where((i) => i.seekerId == seekerId).toList().reversed.toList();
   }
 
-  List<Review> reviewsForUser(String userId) {
-    return reviews.where((r) => r.toUserId == userId).toList().reversed.toList();
+  Future<void> updateProfile({
+    required String userId,
+    String? name,
+    String? bio,
+    List<String>? skills,
+    bool? openToWork,
+    String? businessName,
+    String? location,
+    String? resumeFileName,
+    bool clearResume = false,
+  }) async {
+    final index = users.indexWhere((u) => u.id == userId);
+    if (index == -1) return;
+    final old = users[index];
+    users[index] = AppUser(
+      id: old.id,
+      name: (name != null && name.trim().isNotEmpty) ? name.trim() : old.name,
+      email: old.email,
+      password: old.password,
+      role: old.role,
+      bio: bio ?? old.bio,
+      skills: skills ?? old.skills,
+      resumeFileName: clearResume ? null : (resumeFileName ?? old.resumeFileName),
+      openToWork: openToWork ?? old.openToWork,
+      businessName: businessName ?? old.businessName,
+      location: location ?? old.location,
+    );
+    await saveData();
+    notifyListeners();
+  }
+
+  Future<void> addReview({
+    required String fromUserId,
+    required String toUserId,
+    required String jobId,
+    required int stars,
+    String comment = '',
+  }) async {
+    if (stars < 1 || stars > 5) return;
+    if (hasReviewed(fromUserId, toUserId, jobId)) return;
+    final review = Review(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      fromUserId: fromUserId,
+      toUserId: toUserId,
+      jobId: jobId,
+      stars: stars,
+      comment: comment.trim(),
+      createdAt: DateTime.now(),
+    );
+    reviews.add(review);
+    await saveData();
+    notifyListeners();
   }
 
   Future<void> loadData() async {
@@ -516,22 +581,28 @@ class AppProvider extends ChangeNotifier {
         id: 'r1',
         fromUserId: 'e1',
         toUserId: 's1',
+        jobId: 'j1',
         stars: 5,
         comment: 'Very reliable and hardworking in the kitchen.',
+        createdAt: DateTime(2026, 11, 12),
       ),
       Review(
         id: 'r2',
         fromUserId: 'e3',
         toUserId: 's3',
+        jobId: 'j3',
         stars: 4,
         comment: 'Thorough cleaning and always on time.',
+        createdAt: DateTime(2026, 11, 10),
       ),
       Review(
         id: 'r3',
         fromUserId: 's1',
         toUserId: 'e1',
+        jobId: 'j1',
         stars: 5,
         comment: 'Kind employer and fair pay.',
+        createdAt: DateTime(2026, 11, 13),
       ),
     ];
 

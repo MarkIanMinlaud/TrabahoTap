@@ -4,7 +4,7 @@ import '../theme/app_theme.dart';
 import 'alerts_screen.dart';
 import 'applications_screen.dart';
 import 'jobs_screen.dart';
-import 'profile_placeholder_screen.dart';
+import 'profile_screen.dart';
 
 class SeekerShell extends StatefulWidget {
   const SeekerShell({super.key});
@@ -20,7 +20,7 @@ class _SeekerShellState extends State<SeekerShell> {
     JobsScreen(),
     ApplicationsScreen(),
     AlertsScreen(),
-    ProfilePlaceholderScreen(),
+    ProfileScreen(),
   ];
 
   @override

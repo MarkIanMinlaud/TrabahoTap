@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../models/application.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/star_rating.dart';
+import 'rating_dialog.dart';
 import 'talent_detail_screen.dart';
 
 class ApplicantsScreen extends StatelessWidget {
@@ -52,6 +54,7 @@ class ApplicantsScreen extends StatelessWidget {
     final app = context.watch<AppProvider>();
     final job = app.jobs.firstWhere((j) => j.id == jobId);
     final applicants = app.applicantsForJob(jobId);
+    final reviewerId = app.currentUser?.id ?? '';
 
     return Scaffold(
       appBar: AppBar(leading: const BackButton(), title: Text(job.title)),
@@ -64,8 +67,9 @@ class ApplicantsScreen extends StatelessWidget {
                 final a = applicants[i];
                 final seeker = app.userById(a.seekerId);
                 if (seeker == null) return const SizedBox.shrink();
-                final avg = app.averageRatingFor(seeker.id);
-                final count = app.reviewCountFor(seeker.id);
+                final avg = app.averageRating(seeker.id);
+                final count = app.reviewCount(seeker.id);
+                final rated = app.hasReviewed(reviewerId, seeker.id, jobId);
                 final skills = seeker.skills.take(3).toList();
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -99,16 +103,7 @@ class ApplicantsScreen extends StatelessWidget {
                                   children: [
                                     Text(seeker.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                                     const SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        const Icon(Icons.star, color: AppColors.primary, size: 16),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          count == 0 ? 'No ratings yet' : '${avg.toStringAsFixed(1)} ($count)',
-                                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                                        ),
-                                      ],
-                                    ),
+                                    StarRating(rating: avg, count: count),
                                   ],
                                 ),
                               ),
@@ -149,7 +144,6 @@ class ApplicantsScreen extends StatelessWidget {
                                 Expanded(
                                   child: ElevatedButton(
                                     onPressed: () => _updateStatus(context, a.id, ApplicationStatus.hired),
-                                    // TODO: Add rating dialog after hiring (next slice).
                                     child: const Text('Hire'),
                                   ),
                                 ),
@@ -162,6 +156,30 @@ class ApplicantsScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
+                          ],
+                          if (a.status == ApplicationStatus.hired) ...[
+                            const SizedBox(height: AppSpacing.md),
+                            if (rated)
+                              Container(
+                                height: 48,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: AppColors.inputFill,
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: const Text(
+                                  'Rated ✓',
+                                  style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                                ),
+                              )
+                            else
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton(
+                                  onPressed: () => showRatingDialog(context, toUser: seeker, jobId: jobId),
+                                  child: const Text('Rate Worker'),
+                                ),
+                              ),
                           ],
                         ],
                       ),

@@ -1,4 +1,4 @@
-﻿import 'package:material_ui/material_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../models/app_user.dart';
 import '../theme/app_theme.dart';
@@ -19,67 +19,86 @@ class _RoleSelectScreenState extends State<RoleSelectScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 24),
-              const Text(
-                'Who are you?',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.text,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Choose your role to continue.',
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 32),
-              _RoleCard(
-                title: "I'm a Job Seeker",
-                subtitle: 'I want to find work',
-                icon: Icons.person_search_rounded,
-                selected: _selected == UserRole.seeker,
-                onTap: () => setState(() => _selected = UserRole.seeker),
-              ),
-              const SizedBox(height: 16),
-              _RoleCard(
-                title: "I'm a Business Owner",
-                subtitle: 'I want to hire',
-                icon: Icons.storefront_rounded,
-                selected: _selected == UserRole.employer,
-                onTap: () => setState(() => _selected = UserRole.employer),
-              ),
-              const Spacer(),
-              ElevatedButton(
-                onPressed: _selected == null
-                    ? null
-                    : () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => SignUpScreen(role: _selected!),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final minHeight = constraints.maxHeight > AppSpacing.xl * 2
+                ? constraints.maxHeight - AppSpacing.xl * 2
+                : 0.0;
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: minHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: AppSpacing.xl),
+                      const Text(
+                        'Who are you?',
+                        style: AppTextStyles.authTitle,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      const Text(
+                        'Choose your role to continue.',
+                        style: AppTextStyles.hint,
+                      ),
+                      const SizedBox(height: AppSpacing.xxl),
+                      _RoleCard(
+                        title: "I'm a Job Seeker",
+                        subtitle: 'I want to find work',
+                        icon: Icons.person_search_rounded,
+                        selected: _selected == UserRole.seeker,
+                        onTap: () =>
+                            setState(() => _selected = UserRole.seeker),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      _RoleCard(
+                        title: "I'm a Business Owner",
+                        subtitle: 'I want to hire',
+                        icon: Icons.storefront_rounded,
+                        selected: _selected == UserRole.employer,
+                        onTap: () =>
+                            setState(() => _selected = UserRole.employer),
+                      ),
+                      const Spacer(),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _selected == null
+                              ? null
+                              : () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          SignUpScreen(role: _selected!),
+                                    ),
+                                  );
+                                },
+                          child: const Text('Continue'),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Center(
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const LoginScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Already have an account? Sign in',
+                            textAlign: TextAlign.center,
                           ),
-                        );
-                      },
-                child: const Text('Continue'),
-              ),
-              const SizedBox(height: 12),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    );
-                  },
-                  child: const Text('Already have an account? Sign in'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -105,18 +124,22 @@ class _RoleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppSpacing.radius),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: selected ? AppColors.cream : Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          color: selected ? AppColors.cream : AppColors.background,
+          borderRadius: BorderRadius.circular(AppSpacing.radius),
           border: Border.all(
             color: selected ? AppColors.primary : AppColors.inputFill,
             width: 2,
           ),
           boxShadow: const [
-            BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2)),
+            BoxShadow(
+              color: AppColors.shadow,
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
           ],
         ),
         child: Row(
@@ -130,24 +153,14 @@ class _RoleCard extends StatelessWidget {
               ),
               child: Icon(icon, color: AppColors.text),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: AppSpacing.lg),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.text,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(color: AppColors.textSecondary),
-                  ),
+                  Text(title, style: AppTextStyles.sectionTitle),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(subtitle, style: AppTextStyles.hint),
                 ],
               ),
             ),
@@ -157,4 +170,3 @@ class _RoleCard extends StatelessWidget {
     );
   }
 }
-

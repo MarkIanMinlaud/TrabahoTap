@@ -1,4 +1,4 @@
-﻿import 'package:material_ui/material_ui.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/app_provider.dart';
@@ -36,4 +36,3 @@ class TrabahoTapApp extends StatelessWidget {
     );
   }
 }
-

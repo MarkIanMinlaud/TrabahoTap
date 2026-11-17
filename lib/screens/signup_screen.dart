@@ -1,4 +1,4 @@
-﻿import 'package:material_ui/material_ui.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../models/app_user.dart';
@@ -41,20 +41,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
       email: _email.text.trim(),
       password: _password.text,
       role: widget.role,
-      businessName: widget.role == UserRole.employer ? _business.text.trim() : null,
+      businessName: widget.role == UserRole.employer
+          ? _business.text.trim()
+          : null,
     );
     if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error)));
       return;
     }
     if (!mounted) return;
     await showDialog(
       context: context,
       barrierDismissible: false,
+      barrierColor: AppColors.overlay,
       builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radius),
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -67,18 +73,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 child: const Icon(Icons.check, size: 40, color: AppColors.text),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               const Text(
                 'Congratulations!',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+                style: AppTextStyles.dialogTitle,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               const Text(
                 'Your account is ready to use',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textSecondary),
+                style: AppTextStyles.hint,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.lg),
               ElevatedButton(
                 onPressed: () => Navigator.of(ctx).pop(),
                 child: const Text('Continue'),
@@ -99,9 +106,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(leading: const BackButton()),
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.xl,
+            AppSpacing.xl,
+            AppSpacing.xl + MediaQuery.viewInsetsOf(context).bottom,
+          ),
           child: Form(
             key: _formKey,
             child: Column(
@@ -109,33 +123,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
               children: [
                 const Text(
                   'Create your Account',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  style: AppTextStyles.authTitle,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.xl),
                 TextFormField(
                   controller: _name,
                   decoration: const InputDecoration(hintText: 'Full name'),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                  validator: (v) =>
+                      (v == null || v.trim().isEmpty) ? 'Required' : null,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 TextFormField(
                   controller: _email,
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(hintText: 'Email'),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return 'Required';
-                    if (!v.contains('@') || !v.contains('.')) return 'Invalid email';
+                    if (!v.contains('@') || !v.contains('.')) {
+                      return 'Invalid email';
+                    }
                     return null;
                   },
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 TextFormField(
                   controller: _password,
                   obscureText: _obscure,
                   decoration: InputDecoration(
                     hintText: 'Password',
                     suffixIcon: IconButton(
-                      icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                      icon: Icon(
+                        _obscure ? Icons.visibility_off : Icons.visibility,
+                      ),
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
                   ),
@@ -146,14 +165,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   },
                 ),
                 if (widget.role == UserRole.employer) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   TextFormField(
                     controller: _business,
-                    decoration: const InputDecoration(hintText: 'Business name'),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    decoration: const InputDecoration(
+                      hintText: 'Business name',
+                    ),
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Required' : null,
                   ),
                 ],
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Row(
                   children: [
                     Checkbox(
@@ -161,12 +183,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       activeColor: AppColors.primary,
                       onChanged: (v) => setState(() => _remember = v ?? false),
                     ),
-                    const Text('Remember me'),
+                    const Expanded(child: Text('Remember me')),
                   ],
                 ),
-                const SizedBox(height: 8),
-                ElevatedButton(onPressed: _submit, child: const Text('Sign up')),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.sm),
+                ElevatedButton(
+                  onPressed: _submit,
+                  child: const Text('Sign up'),
+                ),
+                const SizedBox(height: AppSpacing.md),
                 Center(
                   child: TextButton(
                     onPressed: () {
@@ -185,4 +210,3 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 }
-

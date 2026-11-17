@@ -67,19 +67,17 @@ class _RatingSheetState extends State<RatingSheet> {
       return;
     }
     _submitted = true;
-    Navigator.of(context).pop(
-      RatingResult(
-        stars: _stars,
-        comment: _commentController.text.trim(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).pop(RatingResult(stars: _stars, comment: _commentController.text.trim()));
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       top: false,
-      child: Padding(
+      child: SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: EdgeInsets.fromLTRB(
           AppSpacing.xl,
           AppSpacing.xl,
@@ -92,6 +90,8 @@ class _RatingSheetState extends State<RatingSheet> {
           children: [
             Text(
               'Rate ${widget.name}',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
@@ -129,7 +129,7 @@ class _RatingSheetState extends State<RatingSheet> {
 Future<void> showReviewThanksDialog(BuildContext context) {
   return showDialog<void>(
     context: context,
-    barrierColor: Colors.black54,
+    barrierColor: AppColors.overlay,
     builder: (dialogContext) => Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radius),

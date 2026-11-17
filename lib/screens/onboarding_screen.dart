@@ -1,4 +1,4 @@
-﻿import 'package:material_ui/material_ui.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/app_provider.dart';
@@ -55,7 +55,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             children: [
               Align(
@@ -72,52 +72,65 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   onPageChanged: (i) => setState(() => _index = i),
                   itemBuilder: (context, i) {
                     final slide = _slides[i];
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 160,
-                          height: 160,
-                          decoration: const BoxDecoration(
-                            color: AppColors.cream,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Container(
-                              width: 90,
-                              height: 90,
-                              decoration: const BoxDecoration(
-                                color: AppColors.primary,
-                                shape: BoxShape.circle,
+                    return LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SingleChildScrollView(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: constraints.maxHeight,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.md,
                               ),
-                              child: Icon(
-                                slide.icon,
-                                size: 44,
-                                color: AppColors.text,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 160,
+                                    height: 160,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.cream,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                      child: Container(
+                                        width: 90,
+                                        height: 90,
+                                        decoration: const BoxDecoration(
+                                          color: AppColors.primary,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          slide.icon,
+                                          size: 44,
+                                          color: AppColors.text,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppSpacing.xxl),
+                                  Text(
+                                    slide.title,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 26,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.text,
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppSpacing.md),
+                                  const Text(
+                                    'TrabahoTap connects job seekers and businesses in Davao City.',
+                                    textAlign: TextAlign.center,
+                                    style: AppTextStyles.hint,
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 40),
-                        Text(
-                          slide.title,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.text,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'TrabahoTap connects job seekers and businesses in Davao City.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
+                        );
+                      },
                     );
                   },
                 ),
@@ -127,20 +140,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 children: List.generate(_slides.length, (i) {
                   final active = i == _index;
                   return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.xs,
+                    ),
                     width: active ? 20 : 8,
                     height: 8,
                     decoration: BoxDecoration(
                       color: active ? AppColors.primary : AppColors.inputFill,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppSpacing.sm),
                     ),
                   );
                 }),
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _next,
-                child: Text(_index == _slides.length - 1 ? 'Get Started' : 'Next'),
+              const SizedBox(height: AppSpacing.xl),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _next,
+                  child: Text(
+                    _index == _slides.length - 1 ? 'Get Started' : 'Next',
+                  ),
+                ),
               ),
             ],
           ),
@@ -155,4 +175,3 @@ class _SlideData {
   final String title;
   const _SlideData({required this.icon, required this.title});
 }
-

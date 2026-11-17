@@ -5,6 +5,7 @@ import '../models/application.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/delete_job_dialog.dart';
+import '../widgets/empty_state.dart';
 import '../widgets/job_status_chip.dart';
 import 'applicants_screen.dart';
 
@@ -28,9 +29,8 @@ class MyJobsScreen extends StatelessWidget {
 
     await context.read<AppProvider>().deleteJob(jobId);
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Job deleted')),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Job deleted')));
   }
 
   @override
@@ -41,33 +41,24 @@ class MyJobsScreen extends StatelessWidget {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'My Jobs',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.text),
-            ),
-            const SizedBox(height: 16),
+            const Text('My Jobs', style: AppTextStyles.pageTitle),
+            const SizedBox(height: AppSpacing.lg),
             Expanded(
               child: jobs.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.work_outline, size: 48, color: AppColors.textSecondary),
-                          const SizedBox(height: 8),
-                          const Text('No jobs posted yet', style: TextStyle(color: AppColors.textSecondary)),
-                          const SizedBox(height: 16),
-                            SizedBox(
-                              width: 200,
-                              child: ElevatedButton(
-                                onPressed: onPostJob,
-                                child: const Text('Post a Job'),
-                              ),
-                            ),
-                        ],
+                  ? EmptyState(
+                      icon: Icons.work_outline,
+                      message: 'No jobs posted yet',
+                      subtitle: 'Post your first job to start hiring.',
+                      action: SizedBox(
+                        width: 200,
+                        child: ElevatedButton(
+                          onPressed: onPostJob,
+                          child: const Text('Post a Job'),
+                        ),
                       ),
                     )
                   : ListView.builder(
@@ -77,27 +68,43 @@ class MyJobsScreen extends StatelessWidget {
                         final applicants = app.applicantsForJob(job.id);
                         final count = applicants.length;
                         return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
+                          margin: const EdgeInsets.only(bottom: AppSpacing.md),
                           child: InkWell(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.radius,
+                            ),
                             onTap: () {
                               Navigator.of(itemContext).push(
-                                MaterialPageRoute(builder: (_) => ApplicantsScreen(jobId: job.id)),
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      ApplicantsScreen(jobId: job.id),
+                                ),
                               );
                             },
                             child: Padding(
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(AppSpacing.lg),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(job.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                  const SizedBox(height: 4),
-                                  Text(job.pay, style: const TextStyle(color: AppColors.textSecondary)),
-                                  const SizedBox(height: 8),
+                                  Text(
+                                    job.title,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyles.cardTitle,
+                                  ),
+                                  const SizedBox(height: AppSpacing.xs),
+                                  Text(
+                                    job.pay,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyles.hint,
+                                  ),
+                                  const SizedBox(height: AppSpacing.sm),
                                   Wrap(
                                     spacing: AppSpacing.sm,
                                     runSpacing: AppSpacing.sm,
-                                    crossAxisAlignment: WrapCrossAlignment.center,
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.center,
                                     children: [
                                       JobStatusChip(
                                         job: job,
@@ -107,25 +114,38 @@ class MyJobsScreen extends StatelessWidget {
                                         label: Text('$count applicants'),
                                         backgroundColor: AppColors.primary,
                                         side: BorderSide.none,
-                                        labelStyle: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.text),
+                                        labelStyle: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.text,
+                                        ),
                                       ),
                                     ],
                                   ),
                                   const SizedBox(height: AppSpacing.md),
                                   Row(
                                     children: [
-                                      Expanded(child: JobFullToggleButton(job: job)),
+                                      Expanded(
+                                        child: JobFullToggleButton(job: job),
+                                      ),
                                       const SizedBox(width: AppSpacing.md),
                                       SizedBox(
-                                        width: 48,
-                                        height: 48,
+                                        width: AppSpacing.minTouchTarget,
+                                        height: AppSpacing.minTouchTarget,
                                         child: IconButton(
                                           tooltip: 'Delete job',
-                                          onPressed: () => _confirmDelete(context, job.id, applicants),
-                                          style: IconButton.styleFrom(
-                                            backgroundColor: AppColors.danger.withValues(alpha: 0.12),
+                                          onPressed: () => _confirmDelete(
+                                            context,
+                                            job.id,
+                                            applicants,
                                           ),
-                                          icon: const Icon(Icons.delete_outline, color: AppColors.danger),
+                                          style: IconButton.styleFrom(
+                                            backgroundColor: AppColors.danger
+                                                .withValues(alpha: 0.12),
+                                          ),
+                                          icon: const Icon(
+                                            Icons.delete_outline,
+                                            color: AppColors.danger,
+                                          ),
                                         ),
                                       ),
                                     ],

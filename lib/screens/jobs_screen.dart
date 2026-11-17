@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/job.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/empty_state.dart';
 import '../widgets/job_card.dart';
 import 'job_detail_screen.dart';
 
@@ -40,9 +41,13 @@ class _JobsScreenState extends State<JobsScreen> {
   bool _matches(Job job, AppProvider app) {
     final employer = app.employerFor(job);
     final q = _query.toLowerCase();
-    final text = '${job.title} ${job.category} ${employer?.businessName ?? ''} ${employer?.name ?? ''}'.toLowerCase();
+    final text =
+        '${job.title} ${job.category} ${employer?.businessName ?? ''} ${employer?.name ?? ''}'
+            .toLowerCase();
     final matchesQuery = q.isEmpty || text.contains(q);
-    final matchesCategory = _selectedCategory == 'All' || job.category == _selectedCategory ||
+    final matchesCategory =
+        _selectedCategory == 'All' ||
+        job.category == _selectedCategory ||
         (_selectedCategory == 'Delivery' && job.category == 'Logistics') ||
         (_selectedCategory == 'Household' && job.category == 'Cleaning');
     return matchesQuery && matchesCategory;
@@ -61,14 +66,19 @@ class _JobsScreenState extends State<JobsScreen> {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Hi, ${user?.name ?? ''}', style: const TextStyle(color: AppColors.textSecondary)),
-            const SizedBox(height: 4),
-            const Text('Find your next job', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.text)),
-            const SizedBox(height: 16),
+            Text(
+              'Hi, ${user?.name ?? ''}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.hint,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            const Text('Find your next job', style: AppTextStyles.pageTitle),
+            const SizedBox(height: AppSpacing.lg),
             TextField(
               controller: _searchController,
               onChanged: (v) => setState(() => _query = v),
@@ -77,13 +87,14 @@ class _JobsScreenState extends State<JobsScreen> {
                 prefixIcon: Icon(Icons.search),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             SizedBox(
-              height: 40,
+              height: AppSpacing.minTouchTarget,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: _categories.length,
-                separatorBuilder: (_, index) => const SizedBox(width: 8),
+                separatorBuilder: (_, index) =>
+                    const SizedBox(width: AppSpacing.sm),
                 itemBuilder: (context, i) {
                   final c = _categories[i];
                   final selected = c == _selectedCategory;
@@ -93,27 +104,29 @@ class _JobsScreenState extends State<JobsScreen> {
                     onSelected: (_) => setState(() => _selectedCategory = c),
                     selectedColor: AppColors.primary,
                     backgroundColor: AppColors.inputFill,
-                    labelStyle: TextStyle(color: AppColors.text, fontWeight: selected ? FontWeight.bold : FontWeight.normal),
+                    labelStyle: TextStyle(
+                      color: AppColors.text,
+                      fontWeight: selected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
                     side: BorderSide.none,
                     shape: const StadiumBorder(),
                   );
                 },
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Expanded(
               child: jobs.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.search_off, size: 48, color: AppColors.textSecondary),
-                          SizedBox(height: 8),
-                          Text('No jobs found', style: TextStyle(color: AppColors.textSecondary)),
-                        ],
-                      ),
+                  ? const EmptyState(
+                      icon: Icons.search_off,
+                      message: 'No jobs found',
+                      subtitle: 'Try a different search or category.',
                     )
                   : ListView.builder(
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
                       itemCount: jobs.length,
                       itemBuilder: (context, i) {
                         final job = jobs[i];
@@ -121,7 +134,9 @@ class _JobsScreenState extends State<JobsScreen> {
                           job: job,
                           onTap: () {
                             Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => JobDetailScreen(job: job)),
+                              MaterialPageRoute(
+                                builder: (_) => JobDetailScreen(job: job),
+                              ),
                             );
                           },
                         );

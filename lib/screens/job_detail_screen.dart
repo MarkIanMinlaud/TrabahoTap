@@ -18,17 +18,21 @@ class JobDetailScreen extends StatelessWidget {
     if (!context.mounted) return;
     if (!applied) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('This employer is no longer accepting applicants')),
+        const SnackBar(
+          content: Text('This employer is no longer accepting applicants'),
+        ),
       );
       return;
     }
     showDialog(
       context: context,
-      barrierColor: Colors.black54,
+      barrierColor: AppColors.overlay,
       builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radius),
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -37,12 +41,19 @@ class JobDetailScreen extends StatelessWidget {
                 backgroundColor: AppColors.primary,
                 child: Icon(Icons.check, color: AppColors.text, size: 32),
               ),
-              const SizedBox(height: 16),
-              const Text('Application Sent!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              const Text('Your application has been submitted.', textAlign: TextAlign.center, style: TextStyle(color: AppColors.textSecondary)),
-              const SizedBox(height: 16),
-              ElevatedButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('OK')),
+              const SizedBox(height: AppSpacing.lg),
+              const Text('Application Sent!', style: AppTextStyles.dialogTitle),
+              const SizedBox(height: AppSpacing.sm),
+              const Text(
+                'Your application has been submitted.',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.hint,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              ElevatedButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('OK'),
+              ),
             ],
           ),
         ),
@@ -66,29 +77,36 @@ class JobDetailScreen extends StatelessWidget {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(AppSpacing.xl),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(job.title, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.text)),
-                  const SizedBox(height: 8),
-                  Text(job.pay, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
-                  const SizedBox(height: 12),
+                  Text(job.title, style: AppTextStyles.authTitle),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    job.pay,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.text,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
                   Chip(
                     label: Text(job.category),
                     backgroundColor: AppColors.cream,
                     side: BorderSide.none,
                   ),
-                  const SizedBox(height: 16),
-                  const Text('Description', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Text(job.description, style: const TextStyle(color: AppColors.textSecondary, height: 1.4)),
-                  const SizedBox(height: 24),
-                  const Text('Employer', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.lg),
+                  const Text('Description', style: AppTextStyles.sectionTitle),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(job.description, style: AppTextStyles.hint),
+                  const SizedBox(height: AppSpacing.xl),
+                  const Text('Employer', style: AppTextStyles.sectionTitle),
+                  const SizedBox(height: AppSpacing.sm),
                   Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(AppSpacing.lg),
                       child: Row(
                         children: [
                           const CircleAvatar(
@@ -96,18 +114,30 @@ class JobDetailScreen extends StatelessWidget {
                             backgroundColor: AppColors.primary,
                             child: Icon(Icons.business, color: AppColors.text),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: AppSpacing.md),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(employer?.businessName ?? employer?.name ?? 'Employer',
-                                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 4),
-                                Text(employer?.location ?? 'Davao City',
-                                    style: const TextStyle(color: AppColors.textSecondary)),
-                                const SizedBox(height: 4),
-                                StarRating(rating: avg, count: count, countSuffix: ' reviews'),
+                                Text(
+                                  employer?.businessName ??
+                                      employer?.name ??
+                                      'Employer',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: AppSpacing.xs),
+                                Text(
+                                  employer?.location ?? 'Davao City',
+                                  style: AppTextStyles.hint,
+                                ),
+                                const SizedBox(height: AppSpacing.xs),
+                                StarRating(
+                                  rating: avg,
+                                  count: count,
+                                  countSuffix: ' reviews',
+                                ),
                               ],
                             ),
                           ),
@@ -122,41 +152,46 @@ class JobDetailScreen extends StatelessWidget {
           SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                AppSpacing.sm,
+                AppSpacing.xl,
+                AppSpacing.lg,
+              ),
               child: applied
                   ? ElevatedButton(
                       onPressed: null,
                       style: ElevatedButton.styleFrom(
-                        disabledBackgroundColor: Colors.grey.shade300,
+                        disabledBackgroundColor: AppColors.disabled,
                         disabledForegroundColor: AppColors.textSecondary,
                       ),
                       child: const Text('Applied'),
                     )
                   : currentJob.isFull
-                      ? Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            const Text(
-                              'This employer is no longer accepting applicants',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: AppColors.textSecondary),
-                            ),
-                            const SizedBox(height: AppSpacing.sm),
-                            ElevatedButton(
-                              onPressed: null,
-                              style: ElevatedButton.styleFrom(
-                                disabledBackgroundColor: Colors.grey.shade300,
-                                disabledForegroundColor: AppColors.textSecondary,
-                              ),
-                              child: const Text('Position Filled'),
-                            ),
-                          ],
-                        )
-                      : ElevatedButton(
-                          onPressed: () => _apply(context),
-                          child: const Text('Apply Now'),
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text(
+                          'This employer is no longer accepting applicants',
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.hint,
                         ),
+                        const SizedBox(height: AppSpacing.sm),
+                        ElevatedButton(
+                          onPressed: null,
+                          style: ElevatedButton.styleFrom(
+                            disabledBackgroundColor: AppColors.disabled,
+                            disabledForegroundColor: AppColors.textSecondary,
+                          ),
+                          child: const Text('Position Filled'),
+                        ),
+                      ],
+                    )
+                  : ElevatedButton(
+                      onPressed: () => _apply(context),
+                      child: const Text('Apply Now'),
+                    ),
             ),
           ),
         ],

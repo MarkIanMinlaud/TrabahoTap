@@ -66,11 +66,13 @@ class _PostJobScreenState extends State<PostJobScreen> {
     if (!mounted) return;
     await showDialog(
       context: context,
-      barrierColor: Colors.black54,
+      barrierColor: AppColors.overlay,
       builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radius),
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -79,16 +81,19 @@ class _PostJobScreenState extends State<PostJobScreen> {
                 backgroundColor: AppColors.primary,
                 child: Icon(Icons.check, color: AppColors.text, size: 32),
               ),
-              const SizedBox(height: 16),
-              const Text('Job Posted!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.lg),
+              const Text('Job Posted!', style: AppTextStyles.dialogTitle),
+              const SizedBox(height: AppSpacing.sm),
               const Text(
                 'Your job is now visible to workers.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textSecondary),
+                style: AppTextStyles.hint,
               ),
-              const SizedBox(height: 16),
-              ElevatedButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('OK')),
+              const SizedBox(height: AppSpacing.lg),
+              ElevatedButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('OK'),
+              ),
             ],
           ),
         ),
@@ -101,36 +106,45 @@ class _PostJobScreenState extends State<PostJobScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.lg,
+          AppSpacing.lg,
+          AppSpacing.lg + MediaQuery.viewInsetsOf(context).bottom,
+        ),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Post a Job',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.text),
-              ),
-              const SizedBox(height: 16),
+              const Text('Post a Job', style: AppTextStyles.pageTitle),
+              const SizedBox(height: AppSpacing.lg),
               TextFormField(
                 controller: _title,
                 decoration: const InputDecoration(hintText: 'Job title'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Required' : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               DropdownButtonFormField<String>(
                 initialValue: _category,
                 decoration: const InputDecoration(hintText: 'Category'),
-                items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                items: _categories
+                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                    .toList(),
                 onChanged: (v) => setState(() => _category = v ?? _category),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: _pay,
-                decoration: const InputDecoration(hintText: 'Pay (e.g. PHP 500/day)'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                decoration: const InputDecoration(
+                  hintText: 'Pay (e.g. PHP 500/day)',
+                ),
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Required' : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: _vacancies,
                 keyboardType: TextInputType.number,
@@ -146,7 +160,7 @@ class _PostJobScreenState extends State<PostJobScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: _description,
                 minLines: 4,
@@ -154,9 +168,10 @@ class _PostJobScreenState extends State<PostJobScreen> {
                 decoration: const InputDecoration(
                   hintText: 'Tell job seekers what you need and who you are looking for',
                 ),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Required' : null,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.xl),
               ElevatedButton(onPressed: _submit, child: const Text('Post Job')),
             ],
           ),

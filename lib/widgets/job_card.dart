@@ -46,21 +46,24 @@ class JobCard extends StatelessWidget {
     final count = employer != null ? app.reviewCount(employer.id) : 0;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppSpacing.radius),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CircleAvatar(
                 radius: 24,
                 backgroundColor: AppColors.primary,
-                child: Icon(_iconForCategory(job.category), color: AppColors.text),
+                child: Icon(
+                  _iconForCategory(job.category),
+                  color: AppColors.text,
+                ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,7 +73,9 @@ class JobCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             job.title,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.cardTitle,
                           ),
                         ),
                         if (job.isFull) ...[
@@ -82,11 +87,24 @@ class JobCard extends StatelessWidget {
                         ],
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(employer?.businessName ?? employer?.name ?? 'Employer', style: const TextStyle(color: AppColors.textSecondary)),
-                    const SizedBox(height: 4),
-                    Text(job.pay, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.text)),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      employer?.businessName ?? employer?.name ?? 'Employer',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.hint,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      job.pay,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.text,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
                     StarRating(rating: avg, count: count),
                   ],
                 ),

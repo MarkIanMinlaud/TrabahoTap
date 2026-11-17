@@ -78,9 +78,7 @@ class AppProvider extends ChangeNotifier {
   }
 
   bool hasApplied(String seekerId, String jobId) {
-    return applications.any(
-      (a) => a.seekerId == seekerId && a.jobId == jobId,
-    );
+    return applications.any((a) => a.seekerId == seekerId && a.jobId == jobId);
   }
 
   // Number of workers already hired for a job.
@@ -91,7 +89,11 @@ class AppProvider extends ChangeNotifier {
   }
 
   List<Application> applicationsForSeeker(String seekerId) {
-    return applications.where((a) => a.seekerId == seekerId).toList().reversed.toList();
+    return applications
+        .where((a) => a.seekerId == seekerId)
+        .toList()
+        .reversed
+        .toList();
   }
 
   Future<bool> applyToJob(String seekerId, String jobId) async {
@@ -134,7 +136,11 @@ class AppProvider extends ChangeNotifier {
   }
 
   List<Application> applicantsForJob(String jobId) {
-    return applications.where((a) => a.jobId == jobId).toList().reversed.toList();
+    return applications
+        .where((a) => a.jobId == jobId)
+        .toList()
+        .reversed
+        .toList();
   }
 
   Future<void> postJob({
@@ -189,7 +195,10 @@ class AppProvider extends ChangeNotifier {
     return true;
   }
 
-  Future<void> updateApplicationStatus(String applicationId, ApplicationStatus status) async {
+  Future<void> updateApplicationStatus(
+    String applicationId,
+    ApplicationStatus status,
+  ) async {
     final index = applications.indexWhere((a) => a.id == applicationId);
     if (index == -1) return;
     applications[index] = applications[index].copyWith(status: status);
@@ -228,7 +237,11 @@ class AppProvider extends ChangeNotifier {
   }
 
   List<Invite> invitesForSeeker(String seekerId) {
-    return invites.where((i) => i.seekerId == seekerId).toList().reversed.toList();
+    return invites
+        .where((i) => i.seekerId == seekerId)
+        .toList()
+        .reversed
+        .toList();
   }
 
   Future<void> updateProfile({
@@ -253,7 +266,9 @@ class AppProvider extends ChangeNotifier {
       role: old.role,
       bio: bio ?? old.bio,
       skills: skills ?? old.skills,
-      resumeFileName: clearResume ? null : (resumeFileName ?? old.resumeFileName),
+      resumeFileName: clearResume
+          ? null
+          : (resumeFileName ?? old.resumeFileName),
       openToWork: openToWork ?? old.openToWork,
       businessName: businessName ?? old.businessName,
       location: location ?? old.location,
@@ -346,7 +361,9 @@ class AppProvider extends ChangeNotifier {
     required UserRole role,
     String? businessName,
   }) {
-    final exists = users.any((u) => u.email.toLowerCase() == email.toLowerCase());
+    final exists = users.any(
+      (u) => u.email.toLowerCase() == email.toLowerCase(),
+    );
     if (exists) return 'Email is already registered.';
     final id = DateTime.now().millisecondsSinceEpoch.toString();
     final user = AppUser(
@@ -366,7 +383,8 @@ class AppProvider extends ChangeNotifier {
 
   String? logIn(String email, String password) {
     for (final u in users) {
-      if (u.email.toLowerCase() == email.toLowerCase() && u.password == password) {
+      if (u.email.toLowerCase() == email.toLowerCase() &&
+          u.password == password) {
         currentUserId = u.id;
         saveData();
         notifyListeners();
@@ -384,26 +402,30 @@ class AppProvider extends ChangeNotifier {
 
   void _ensureDemoAccounts() {
     if (!users.any((u) => u.email == 'seeker@demo.com')) {
-      users.add(AppUser(
-        id: 'demo_seeker',
-        name: 'Demo Seeker',
-        email: 'seeker@demo.com',
-        password: '123456',
-        role: UserRole.seeker,
-        location: 'Davao City',
-        openToWork: true,
-      ));
+      users.add(
+        AppUser(
+          id: 'demo_seeker',
+          name: 'Demo Seeker',
+          email: 'seeker@demo.com',
+          password: '123456',
+          role: UserRole.seeker,
+          location: 'Davao City',
+          openToWork: true,
+        ),
+      );
     }
     if (!users.any((u) => u.email == 'employer@demo.com')) {
-      users.add(AppUser(
-        id: 'demo_employer',
-        name: 'Demo Employer',
-        email: 'employer@demo.com',
-        password: '123456',
-        role: UserRole.employer,
-        businessName: 'Demo Business',
-        location: 'Davao City',
-      ));
+      users.add(
+        AppUser(
+          id: 'demo_employer',
+          name: 'Demo Employer',
+          email: 'employer@demo.com',
+          password: '123456',
+          role: UserRole.employer,
+          businessName: 'Demo Business',
+          location: 'Davao City',
+        ),
+      );
     }
   }
 
@@ -546,7 +568,8 @@ class AppProvider extends ChangeNotifier {
         title: 'Kitchen Helper',
         category: 'Food Service',
         pay: '₱450/day',
-        description: 'Assist in food prep and kitchen cleaning at our carinderia.',
+        description:
+            'Assist in food prep and kitchen cleaning at our carinderia.',
         employerId: 'e1',
         createdAt: DateTime(2026, 11, 10),
         vacancies: 2,
@@ -566,7 +589,8 @@ class AppProvider extends ChangeNotifier {
         title: 'House Cleaner',
         category: 'Cleaning',
         pay: '₱400/day',
-        description: 'Part-time house cleaning for residential clients in Matina.',
+        description:
+            'Part-time house cleaning for residential clients in Matina.',
         employerId: 'e3',
         createdAt: DateTime(2026, 11, 8),
         vacancies: 2,
@@ -576,7 +600,8 @@ class AppProvider extends ChangeNotifier {
         title: 'Delivery Rider',
         category: 'Logistics',
         pay: '₱550/day',
-        description: 'Deliver supplies around Davao City. Own motorcycle preferred.',
+        description:
+            'Deliver supplies around Davao City. Own motorcycle preferred.',
         employerId: 'e2',
         createdAt: DateTime(2026, 11, 11),
         vacancies: 1,
@@ -644,11 +669,41 @@ class AppProvider extends ChangeNotifier {
     ];
 
     applications = [
-      Application(id: 'a1', jobId: 'j1', seekerId: 's1', status: ApplicationStatus.hired, appliedAt: DateTime(2026, 11, 3)),
-      Application(id: 'a2', jobId: 'j4', seekerId: 's2', status: ApplicationStatus.pending, appliedAt: DateTime(2026, 11, 12)),
-      Application(id: 'a3', jobId: 'j3', seekerId: 's3', status: ApplicationStatus.hired, appliedAt: DateTime(2026, 11, 5)),
-      Application(id: 'a4', jobId: 'j5', seekerId: 's6', status: ApplicationStatus.rejected, appliedAt: DateTime(2026, 11, 8)),
-      Application(id: 'a5', jobId: 'j2', seekerId: 's5', status: ApplicationStatus.pending, appliedAt: DateTime(2026, 11, 14)),
+      Application(
+        id: 'a1',
+        jobId: 'j1',
+        seekerId: 's1',
+        status: ApplicationStatus.hired,
+        appliedAt: DateTime(2026, 11, 3),
+      ),
+      Application(
+        id: 'a2',
+        jobId: 'j4',
+        seekerId: 's2',
+        status: ApplicationStatus.pending,
+        appliedAt: DateTime(2026, 11, 12),
+      ),
+      Application(
+        id: 'a3',
+        jobId: 'j3',
+        seekerId: 's3',
+        status: ApplicationStatus.hired,
+        appliedAt: DateTime(2026, 11, 5),
+      ),
+      Application(
+        id: 'a4',
+        jobId: 'j5',
+        seekerId: 's6',
+        status: ApplicationStatus.rejected,
+        appliedAt: DateTime(2026, 11, 8),
+      ),
+      Application(
+        id: 'a5',
+        jobId: 'j2',
+        seekerId: 's5',
+        status: ApplicationStatus.pending,
+        appliedAt: DateTime(2026, 11, 14),
+      ),
     ];
 
     reviews = [

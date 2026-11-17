@@ -21,10 +21,7 @@ class Job {
     this.isFull = false,
   });
 
-  Job copyWith({
-    int? vacancies,
-    bool? isFull,
-  }) {
+  Job copyWith({int? vacancies, bool? isFull}) {
     return Job(
       id: id,
       title: title,

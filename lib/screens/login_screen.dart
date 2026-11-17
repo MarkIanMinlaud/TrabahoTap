@@ -1,4 +1,4 @@
-﻿import 'package:material_ui/material_ui.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../models/app_user.dart';
@@ -33,9 +33,9 @@ class _LoginScreenState extends State<LoginScreen> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     final err = context.read<AppProvider>().logIn(
-          _email.text.trim(),
-          _password.text,
-        );
+      _email.text.trim(),
+      _password.text,
+    );
     if (err != null) {
       setState(() => _error = err);
       return;
@@ -54,9 +54,16 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(leading: const BackButton()),
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.xl,
+            AppSpacing.xl,
+            AppSpacing.xl + MediaQuery.viewInsetsOf(context).bottom,
+          ),
           child: Form(
             key: _formKey,
             child: Column(
@@ -64,29 +71,33 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const Text(
                   'Login to your Account',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  style: AppTextStyles.authTitle,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.xl),
                 TextFormField(
                   controller: _email,
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(hintText: 'Email'),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                  validator: (v) =>
+                      (v == null || v.trim().isEmpty) ? 'Required' : null,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 TextFormField(
                   controller: _password,
                   obscureText: _obscure,
                   decoration: InputDecoration(
                     hintText: 'Password',
                     suffixIcon: IconButton(
-                      icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                      icon: Icon(
+                        _obscure ? Icons.visibility_off : Icons.visibility,
+                      ),
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
                   ),
-                  validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                  validator: (v) =>
+                      (v == null || v.isEmpty) ? 'Required' : null,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Row(
                   children: [
                     Checkbox(
@@ -94,26 +105,34 @@ class _LoginScreenState extends State<LoginScreen> {
                       activeColor: AppColors.primary,
                       onChanged: (v) => setState(() => _remember = v ?? false),
                     ),
-                    const Text('Remember me'),
+                    const Expanded(child: Text('Remember me')),
                   ],
                 ),
                 if (_error != null) ...[
-                  const SizedBox(height: 4),
-                  Text(_error!, style: const TextStyle(color: Colors.red)),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    _error!,
+                    style: const TextStyle(color: AppColors.danger),
+                  ),
                 ],
-                const SizedBox(height: 8),
-                ElevatedButton(onPressed: _submit, child: const Text('Sign in')),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.sm),
+                ElevatedButton(
+                  onPressed: _submit,
+                  child: const Text('Sign in'),
+                ),
+                const SizedBox(height: AppSpacing.md),
                 const Text(
                   'Demo: seeker@demo.com / employer@demo.com, password 123456',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  style: AppTextStyles.caption,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 Center(
                   child: TextButton(
                     onPressed: () {
                       Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (_) => const RoleSelectScreen()),
+                        MaterialPageRoute(
+                          builder: (_) => const RoleSelectScreen(),
+                        ),
                       );
                     },
                     child: const Text("Don't have an account? Sign up"),
@@ -127,4 +146,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-

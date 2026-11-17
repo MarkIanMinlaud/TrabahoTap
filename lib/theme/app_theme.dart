@@ -11,6 +11,10 @@ class AppColors {
   static const Color success = Color(0xFF2E7D32);
   static const Color successSoft = Color(0xFFE8F5E9);
   static const Color neutral = Color(0xFF9E9E9E);
+  static const Color disabled = Color(0xFFE0E0E0);
+  static const Color divider = Color(0xFFEEEEEE);
+  static const Color overlay = Colors.black54;
+  static const Color shadow = Colors.black12;
 }
 
 class AppSpacing {
@@ -23,6 +27,49 @@ class AppSpacing {
   static const double radius = 16;
   static const double inputRadius = 12;
   static const double buttonHeight = 54;
+  static const double minTouchTarget = 48;
+}
+
+class AppTextStyles {
+  static const TextStyle authTitle = TextStyle(
+    fontSize: 28,
+    fontWeight: FontWeight.bold,
+    color: AppColors.text,
+  );
+  static const TextStyle pageTitle = TextStyle(
+    fontSize: 24,
+    fontWeight: FontWeight.bold,
+    color: AppColors.text,
+  );
+  static const TextStyle dialogTitle = TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+    color: AppColors.text,
+  );
+  static const TextStyle sectionTitle = TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+    color: AppColors.text,
+  );
+  static const TextStyle cardTitle = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+    color: AppColors.text,
+  );
+  static const TextStyle body = TextStyle(
+    fontSize: 14,
+    color: AppColors.text,
+    height: 1.4,
+  );
+  static const TextStyle hint = TextStyle(
+    fontSize: 14,
+    color: AppColors.textSecondary,
+    height: 1.4,
+  );
+  static const TextStyle caption = TextStyle(
+    fontSize: 12,
+    color: AppColors.textSecondary,
+  );
 }
 
 class AppTheme {
@@ -37,23 +84,12 @@ class AppTheme {
         surface: AppColors.background,
       ),
       textTheme: const TextTheme(
-        headlineMedium: TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
-          color: AppColors.text,
-        ),
-        titleLarge: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: AppColors.text,
-        ),
-        titleMedium: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: AppColors.text,
-        ),
-        bodyMedium: TextStyle(fontSize: 14, color: AppColors.text),
-        bodySmall: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        headlineMedium: AppTextStyles.authTitle,
+        headlineSmall: AppTextStyles.pageTitle,
+        titleLarge: AppTextStyles.dialogTitle,
+        titleMedium: AppTextStyles.cardTitle,
+        bodyMedium: AppTextStyles.body,
+        bodySmall: AppTextStyles.caption,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.background,
@@ -65,15 +101,15 @@ class AppTheme {
         filled: true,
         fillColor: AppColors.inputFill,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
           borderSide: BorderSide.none,
         ),
         hintStyle: const TextStyle(color: AppColors.textSecondary),
@@ -83,32 +119,47 @@ class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.text,
           elevation: 0,
-          minimumSize: const Size.fromHeight(54),
+          minimumSize: const Size.fromHeight(AppSpacing.buttonHeight),
           shape: const StadiumBorder(),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
           side: const BorderSide(color: AppColors.primary),
-          minimumSize: const Size.fromHeight(54),
+          minimumSize: const Size.fromHeight(AppSpacing.buttonHeight),
           shape: const StadiumBorder(),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.text,
+          minimumSize: const Size(64, AppSpacing.minTouchTarget),
+          textStyle: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          minimumSize: const Size(
+            AppSpacing.minTouchTarget,
+            AppSpacing.minTouchTarget,
           ),
         ),
       ),
       cardTheme: CardThemeData(
-        color: Colors.white,
+        color: AppColors.background,
         elevation: 2,
-        shadowColor: Colors.black12,
+        shadowColor: AppColors.shadow,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppSpacing.radius),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.background,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radius),
         ),
       ),
     );

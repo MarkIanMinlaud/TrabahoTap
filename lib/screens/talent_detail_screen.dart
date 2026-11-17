@@ -5,6 +5,7 @@ import '../models/app_user.dart';
 import '../models/job.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/empty_state.dart';
 import '../widgets/star_rating.dart';
 
 class TalentDetailScreen extends StatelessWidget {
@@ -30,13 +31,17 @@ class TalentDetailScreen extends StatelessWidget {
       showModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppSpacing.radius),
+          ),
         ),
-        builder: (ctx) => const Padding(
-          padding: EdgeInsets.all(24),
-          child: Text(
-            'No open jobs',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        builder: (ctx) => const SafeArea(
+          top: false,
+          child: EmptyState(
+            icon: Icons.work_outline,
+            message: 'No open jobs',
+            subtitle: 'Post a job first so you can invite workers.',
+            compact: true,
           ),
         ),
       );
@@ -45,24 +50,34 @@ class TalentDetailScreen extends StatelessWidget {
 
     final selected = await showModalBottomSheet<Job>(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radius),
+        ),
       ),
       builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Select a job', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-              ...openJobs.map((job) => ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(job.title),
-                    subtitle: Text(job.pay),
-                    onTap: () => Navigator.of(ctx).pop(job),
-                  )),
+              const Text('Select a job', style: AppTextStyles.sectionTitle),
+              const SizedBox(height: AppSpacing.md),
+              ...openJobs.map(
+                (job) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    job.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: Text(job.pay),
+                  onTap: () => Navigator.of(ctx).pop(job),
+                ),
+              ),
             ],
           ),
         ),
@@ -78,11 +93,13 @@ class TalentDetailScreen extends StatelessWidget {
       if (!context.mounted) return;
       showDialog(
         context: context,
-        barrierColor: Colors.black54,
+        barrierColor: AppColors.overlay,
         builder: (ctx) => Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radius),
+          ),
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -91,16 +108,19 @@ class TalentDetailScreen extends StatelessWidget {
                   backgroundColor: AppColors.primary,
                   child: Icon(Icons.check, color: AppColors.text, size: 32),
                 ),
-                const SizedBox(height: 16),
-                const Text('Invite Sent!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.lg),
+                const Text('Invite Sent!', style: AppTextStyles.dialogTitle),
+                const SizedBox(height: AppSpacing.sm),
                 const Text(
                   'The worker has been invited to apply.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.textSecondary),
+                  style: AppTextStyles.hint,
                 ),
-                const SizedBox(height: 16),
-                ElevatedButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('OK')),
+                const SizedBox(height: AppSpacing.lg),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('OK'),
+                ),
               ],
             ),
           ),
@@ -114,7 +134,10 @@ class TalentDetailScreen extends StatelessWidget {
     final app = context.watch<AppProvider>();
     final seeker = app.userById(seekerId);
     if (seeker == null) {
-      return Scaffold(appBar: AppBar(), body: const Center(child: Text('User not found')));
+      return Scaffold(
+        appBar: AppBar(),
+        body: const Center(child: Text('User not found')),
+      );
     }
     final avg = app.averageRating(seeker.id);
     final count = app.reviewCount(seeker.id);
@@ -127,7 +150,7 @@ class TalentDetailScreen extends StatelessWidget {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(AppSpacing.xl),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -139,12 +162,22 @@ class TalentDetailScreen extends StatelessWidget {
                           backgroundColor: AppColors.primary,
                           child: Text(
                             _initials(seeker.name),
-                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.text),
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.text,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        Text(seeker.name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          seeker.name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.pageTitle,
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
                         StarRating(
                           rating: avg,
                           count: count,
@@ -154,64 +187,83 @@ class TalentDetailScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  const Text('Bio', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.xl),
+                  const Text('Bio', style: AppTextStyles.sectionTitle),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     seeker.bio.isEmpty ? 'No bio yet' : seeker.bio,
-                    style: const TextStyle(color: AppColors.textSecondary, height: 1.4),
+                    style: AppTextStyles.hint,
                   ),
-                  const SizedBox(height: 16),
-                  const Text('Skills', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.lg),
+                  const Text('Skills', style: AppTextStyles.sectionTitle),
+                  const SizedBox(height: AppSpacing.sm),
                   if (seeker.skills.isEmpty)
-                    const Text('No skills listed', style: TextStyle(color: AppColors.textSecondary))
+                    const Text('No skills listed', style: AppTextStyles.hint)
                   else
                     Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
                       children: seeker.skills
-                          .map((s) => Chip(
-                                label: Text(s),
-                                backgroundColor: AppColors.cream,
-                                side: BorderSide.none,
-                              ))
+                          .map(
+                            (s) => Chip(
+                              label: Text(s),
+                              backgroundColor: AppColors.cream,
+                              side: BorderSide.none,
+                            ),
+                          )
                           .toList(),
                     ),
-                  const SizedBox(height: 16),
-                  const Text('Resume', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.lg),
+                  const Text('Resume', style: AppTextStyles.sectionTitle),
+                  const SizedBox(height: AppSpacing.sm),
                   Row(
                     children: [
                       const Icon(Icons.description, color: AppColors.primary),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Text(
                           seeker.resumeFileName ?? 'No resume uploaded',
-                          style: const TextStyle(color: AppColors.textSecondary),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.hint,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  const Text('Reviews', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.lg),
+                  const Text('Reviews', style: AppTextStyles.sectionTitle),
+                  const SizedBox(height: AppSpacing.sm),
                   if (reviews.isEmpty)
-                    const Text('No reviews yet', style: TextStyle(color: AppColors.textSecondary))
+                    const EmptyState(
+                      icon: Icons.star_border,
+                      message: 'No reviews yet',
+                      subtitle: 'Reviews appear after a worker is hired.',
+                      compact: true,
+                    )
                   else
                     ...reviews.map((r) {
                       final from = app.userById(r.fromUserId);
                       return Card(
-                        margin: const EdgeInsets.only(bottom: 8),
+                        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                         child: Padding(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(AppSpacing.md),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
                                 children: [
-                                  Text(from?.name ?? 'User', style: const TextStyle(fontWeight: FontWeight.w600)),
-                                  const Spacer(),
+                                  Expanded(
+                                    child: Text(
+                                      from?.name ?? 'User',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.text,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppSpacing.sm),
                                   StarRating(
                                     rating: r.stars.toDouble(),
                                     showValue: false,
@@ -220,8 +272,8 @@ class TalentDetailScreen extends StatelessWidget {
                                 ],
                               ),
                               if (r.comment.isNotEmpty) ...[
-                                const SizedBox(height: 4),
-                                Text(r.comment, style: const TextStyle(color: AppColors.textSecondary)),
+                                const SizedBox(height: AppSpacing.xs),
+                                Text(r.comment, style: AppTextStyles.hint),
                               ],
                             ],
                           ),
@@ -236,7 +288,12 @@ class TalentDetailScreen extends StatelessWidget {
             SafeArea(
               top: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xl,
+                  AppSpacing.sm,
+                  AppSpacing.xl,
+                  AppSpacing.lg,
+                ),
                 child: ElevatedButton(
                   onPressed: () => _invite(context, seeker),
                   child: const Text('Invite to Apply'),

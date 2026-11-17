@@ -1,4 +1,4 @@
-﻿import 'package:material_ui/material_ui.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../models/app_user.dart';
@@ -13,47 +13,57 @@ class HomePlaceholderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = context.watch<AppProvider>();
     final user = app.currentUser;
-    final roleText = user?.role == UserRole.employer ? 'Business Owner' : 'Job Seeker';
+    final roleText = user?.role == UserRole.employer
+        ? 'Business Owner'
+        : 'Job Seeker';
 
     return Scaffold(
       appBar: AppBar(title: const Text('TrabahoTap')),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Welcome, ${user?.name ?? ''}',
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: AppColors.text,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final minHeight = constraints.maxHeight > AppSpacing.xl * 2
+                ? constraints.maxHeight - AppSpacing.xl * 2
+                : 0.0;
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: minHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Welcome, ${user?.name ?? ''}',
+                        style: AppTextStyles.authTitle,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(roleText, style: AppTextStyles.hint),
+                      const Spacer(),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            await context.read<AppProvider>().logOut();
+                            if (!context.mounted) return;
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (_) => const LoginScreen(),
+                              ),
+                              (route) => false,
+                            );
+                          },
+                          child: const Text('Log out'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              roleText,
-              style: const TextStyle(
-                fontSize: 16,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: () async {
-                await context.read<AppProvider>().logOut();
-                if (!context.mounted) return;
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (route) => false,
-                );
-              },
-              child: const Text('Log out'),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
   }
 }
-

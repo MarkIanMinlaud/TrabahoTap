@@ -7,6 +7,7 @@ import '../models/job.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/delete_job_dialog.dart';
+import '../widgets/empty_state.dart';
 import '../widgets/job_status_chip.dart';
 import '../widgets/star_rating.dart';
 import 'rating_dialog.dart';
@@ -29,9 +30,9 @@ class ApplicantsScreen extends StatelessWidget {
       case ApplicationStatus.pending:
         return AppColors.primary;
       case ApplicationStatus.hired:
-        return Colors.green;
+        return AppColors.success;
       case ApplicationStatus.rejected:
-        return Colors.red;
+        return AppColors.danger;
     }
   }
 
@@ -46,10 +47,16 @@ class ApplicantsScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _updateStatus(BuildContext context, String appId, ApplicationStatus status) async {
+  Future<void> _updateStatus(
+    BuildContext context,
+    String appId,
+    ApplicationStatus status,
+  ) async {
     await context.read<AppProvider>().updateApplicationStatus(appId, status);
     if (!context.mounted) return;
-    final msg = status == ApplicationStatus.hired ? 'Applicant hired' : 'Applicant rejected';
+    final msg = status == ApplicationStatus.hired
+        ? 'Applicant hired'
+        : 'Applicant rejected';
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
@@ -106,11 +113,15 @@ class ApplicantsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: const BackButton(),
-        title: Text(job?.title ?? 'Deleted job'),
+        title: Text(
+          job?.title ?? 'Deleted job',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         actions: [
           if (job != null)
             Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.only(right: AppSpacing.sm),
               child: IconButton(
                 tooltip: 'Delete job',
                 onPressed: () => _confirmDelete(context, job, applicants),
@@ -123,14 +134,16 @@ class ApplicantsScreen extends StatelessWidget {
         children: [
           if (job != null)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.lg,
+                0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  JobStatusChip(
-                    job: job,
-                    hiredCount: app.hiredCount(job.id),
-                  ),
+                  JobStatusChip(job: job, hiredCount: app.hiredCount(job.id)),
                   const SizedBox(height: AppSpacing.md),
                   JobFullToggleButton(job: job),
                 ],
@@ -138,135 +151,190 @@ class ApplicantsScreen extends StatelessWidget {
             ),
           Expanded(
             child: applicants.isEmpty
-                ? const Center(child: Text('No applicants yet', style: TextStyle(color: AppColors.textSecondary)))
+                ? const EmptyState(
+                    icon: Icons.people_outline,
+                    message: 'No applicants yet',
+                    subtitle: 'New applicants will appear here.',
+                  )
                 : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(AppSpacing.lg),
                     itemCount: applicants.length,
                     itemBuilder: (itemContext, i) {
-                final a = applicants[i];
-                final seeker = app.userById(a.seekerId);
-                if (seeker == null) return const SizedBox.shrink();
-                final avg = app.averageRating(seeker.id);
-                final count = app.reviewCount(seeker.id);
-                final rated = app.hasReviewed(reviewerId, seeker.id, jobId);
-                final skills = seeker.skills.take(3).toList();
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(16),
-                    onTap: () {
-                      Navigator.of(itemContext).push(
-                        MaterialPageRoute(builder: (_) => TalentDetailScreen(seekerId: seeker.id)),
+                      final a = applicants[i];
+                      final seeker = app.userById(a.seekerId);
+                      if (seeker == null) return const SizedBox.shrink();
+                      final avg = app.averageRating(seeker.id);
+                      final count = app.reviewCount(seeker.id);
+                      final rated = app.hasReviewed(
+                        reviewerId,
+                        seeker.id,
+                        jobId,
                       );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CircleAvatar(
-                                radius: 22,
-                                backgroundColor: AppColors.primary,
-                                child: Text(
-                                  _initials(seeker.name),
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.text),
-                                ),
+                      final skills = seeker.skills.take(3).toList();
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.radius,
+                          ),
+                          onTap: () {
+                            Navigator.of(itemContext).push(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    TalentDetailScreen(seekerId: seeker.id),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(AppSpacing.lg),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(seeker.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                    const SizedBox(height: 4),
-                                    StarRating(rating: avg, count: count),
+                                    CircleAvatar(
+                                      radius: 22,
+                                      backgroundColor: AppColors.primary,
+                                      child: Text(
+                                        _initials(seeker.name),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.text,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: AppSpacing.md),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            seeker.name,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTextStyles.cardTitle,
+                                          ),
+                                          const SizedBox(height: AppSpacing.xs),
+                                          StarRating(rating: avg, count: count),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppSpacing.sm,
+                                        vertical: AppSpacing.xs,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: _statusColor(a.status),
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        _statusLabel(a.status),
+                                        style: const TextStyle(
+                                          color: AppColors.background,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: _statusColor(a.status),
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                child: Text(
-                                  _statusLabel(a.status),
-                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (skills.isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 6,
-                              runSpacing: 6,
-                              children: skills
-                                  .map((s) => Chip(
-                                        label: Text(s, style: const TextStyle(fontSize: 12)),
-                                        backgroundColor: AppColors.cream,
-                                        side: BorderSide.none,
-                                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                        padding: EdgeInsets.zero,
-                                        visualDensity: VisualDensity.compact,
-                                      ))
-                                  .toList(),
-                            ),
-                          ],
-                          if (a.status == ApplicationStatus.pending) ...[
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: ElevatedButton(
-                                    onPressed: () => _updateStatus(context, a.id, ApplicationStatus.hired),
-                                    child: const Text('Hire'),
+                                if (skills.isNotEmpty) ...[
+                                  const SizedBox(height: AppSpacing.sm),
+                                  Wrap(
+                                    spacing: 6,
+                                    runSpacing: 6,
+                                    children: skills
+                                        .map(
+                                          (s) => Chip(
+                                            label: Text(
+                                              s,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                            backgroundColor: AppColors.cream,
+                                            side: BorderSide.none,
+                                            materialTapTargetSize:
+                                                MaterialTapTargetSize
+                                                    .shrinkWrap,
+                                            padding: EdgeInsets.zero,
+                                            visualDensity:
+                                                VisualDensity.compact,
+                                          ),
+                                        )
+                                        .toList(),
                                   ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: OutlinedButton(
-                                    onPressed: () => _updateStatus(context, a.id, ApplicationStatus.rejected),
-                                    child: const Text('Reject'),
+                                ],
+                                if (a.status == ApplicationStatus.pending) ...[
+                                  const SizedBox(height: AppSpacing.md),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          onPressed: () => _updateStatus(
+                                            context,
+                                            a.id,
+                                            ApplicationStatus.hired,
+                                          ),
+                                          child: const Text('Hire'),
+                                        ),
+                                      ),
+                                      const SizedBox(width: AppSpacing.md),
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: () => _updateStatus(
+                                            context,
+                                            a.id,
+                                            ApplicationStatus.rejected,
+                                          ),
+                                          child: const Text('Reject'),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
+                                ],
+                                if (a.status == ApplicationStatus.hired) ...[
+                                  const SizedBox(height: AppSpacing.md),
+                                  if (rated)
+                                    Container(
+                                      height: 48,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.inputFill,
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Rated ✓',
+                                        style: TextStyle(
+                                          color: AppColors.textSecondary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton(
+                                        onPressed: () =>
+                                            _rateApplicant(context, seeker),
+                                        child: const Text('Rate Worker'),
+                                      ),
+                                    ),
+                                ],
                               ],
                             ),
-                          ],
-                          if (a.status == ApplicationStatus.hired) ...[
-                            const SizedBox(height: AppSpacing.md),
-                            if (rated)
-                              Container(
-                                height: 48,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: AppColors.inputFill,
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                child: const Text(
-                                  'Rated ✓',
-                                  style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w600),
-                                ),
-                              )
-                            else
-                              SizedBox(
-                                width: double.infinity,
-                                child: OutlinedButton(
-                                  onPressed: () => _rateApplicant(context, seeker),
-                                  child: const Text('Rate Worker'),
-                                ),
-                              ),
-                          ],
-                        ],
-                      ),
-                    ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),

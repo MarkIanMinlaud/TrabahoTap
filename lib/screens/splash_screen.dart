@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
@@ -38,15 +38,14 @@ class _SplashScreenState extends State<SplashScreen> {
     } else {
       next = const RoleSelectScreen();
     }
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => next),
-    );
+    Navigator.of(context)
+        .pushReplacement(MaterialPageRoute(builder: (_) => next));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -64,7 +63,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 color: AppColors.text,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xl),
             const Text(
               'TrabahoTap',
               style: TextStyle(
@@ -73,7 +72,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 color: AppColors.text,
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.xxl),
             const CircularProgressIndicator(color: AppColors.primary),
           ],
         ),
@@ -81,4 +80,3 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 }
-

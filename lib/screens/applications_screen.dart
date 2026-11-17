@@ -5,6 +5,7 @@ import '../models/app_user.dart';
 import '../models/application.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/empty_state.dart';
 import 'rating_dialog.dart';
 
 class ApplicationsScreen extends StatelessWidget {
@@ -15,9 +16,9 @@ class ApplicationsScreen extends StatelessWidget {
       case ApplicationStatus.pending:
         return AppColors.primary;
       case ApplicationStatus.hired:
-        return Colors.green;
+        return AppColors.success;
       case ApplicationStatus.rejected:
-        return Colors.red;
+        return AppColors.danger;
     }
   }
 
@@ -59,8 +60,18 @@ class ApplicationsScreen extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
@@ -72,8 +83,14 @@ class ApplicationsScreen extends StatelessWidget {
         title: const Text('Cancel application?'),
         content: const Text('This will remove your application.'),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('No')),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Yes')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Yes'),
+          ),
         ],
       ),
     );
@@ -82,12 +99,20 @@ class ApplicationsScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _rateEmployer(BuildContext context, AppUser employer, String jobId) async {
+  Future<void> _rateEmployer(
+    BuildContext context,
+    AppUser employer,
+    String jobId,
+  ) async {
     final app = context.read<AppProvider>();
     final reviewer = app.currentUser;
     if (reviewer == null) return;
 
-    final result = await showRatingSheet(context, toUser: employer, jobId: jobId);
+    final result = await showRatingSheet(
+      context,
+      toUser: employer,
+      jobId: jobId,
+    );
     if (result == null || !context.mounted) return;
 
     await app.addReview(
@@ -106,39 +131,38 @@ class ApplicationsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = context.watch<AppProvider>();
     final user = app.currentUser;
-    final apps = user == null ? <Application>[] : app.applicationsForSeeker(user.id);
+    final apps = user == null
+        ? <Application>[]
+        : app.applicationsForSeeker(user.id);
     final seekerId = user?.id ?? '';
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Applications', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.text)),
-            const SizedBox(height: 16),
+            const Text('Applications', style: AppTextStyles.pageTitle),
+            const SizedBox(height: AppSpacing.lg),
             Expanded(
               child: apps.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.assignment_outlined, size: 48, color: AppColors.textSecondary),
-                          SizedBox(height: 8),
-                          Text('No applications yet', style: TextStyle(color: AppColors.textSecondary)),
-                        ],
-                      ),
+                  ? const EmptyState(
+                      icon: Icons.assignment_outlined,
+                      message: 'No applications yet',
+                      subtitle: 'Jobs you apply to will show up here.',
                     )
                   : ListView.builder(
                       itemCount: apps.length,
                       itemBuilder: (itemContext, i) {
                         final a = apps[i];
                         final job = app.jobById(a.jobId);
-                        final employer = job == null ? null : app.employerFor(job);
+                        final employer = job == null
+                            ? null
+                            : app.employerFor(job);
                         return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
+                          margin: const EdgeInsets.only(bottom: AppSpacing.md),
                           child: Padding(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(AppSpacing.lg),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -148,88 +172,136 @@ class ApplicationsScreen extends StatelessWidget {
                                     CircleAvatar(
                                       radius: 24,
                                       backgroundColor: AppColors.primary,
-                                      child: Icon(_iconForCategory(job?.category ?? ''), color: AppColors.text),
+                                      child: Icon(
+                                        _iconForCategory(job?.category ?? ''),
+                                        color: AppColors.text,
+                                      ),
                                     ),
-                                    const SizedBox(width: 12),
+                                    const SizedBox(width: AppSpacing.md),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             job?.title ?? 'Deleted job',
-                                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTextStyles.cardTitle,
                                           ),
-                                          const SizedBox(height: 4),
+                                          const SizedBox(height: AppSpacing.xs),
                                           Text(
-                                            employer?.businessName ?? employer?.name ?? 'Employer',
-                                            style: const TextStyle(color: AppColors.textSecondary),
+                                            employer?.businessName ??
+                                                employer?.name ??
+                                                'Employer',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTextStyles.hint,
                                           ),
                                         ],
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: AppSpacing.sm),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppSpacing.sm,
+                                        vertical: AppSpacing.xs,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: _statusColor(a.status),
-                                        borderRadius: BorderRadius.circular(999),
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
                                       ),
                                       child: Text(
                                         _statusLabel(a.status),
-                                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                                        style: const TextStyle(
+                                          color: AppColors.background,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
-                                const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: AppSpacing.md),
+                                const Divider(
+                                  height: 1,
+                                  thickness: 1,
+                                  color: AppColors.divider,
+                                ),
+                                const SizedBox(height: AppSpacing.md),
                                 Row(
                                   children: [
                                     Expanded(
                                       child: Text(
                                         'Applied ${_formatDate(a.appliedAt)}',
-                                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                        style: AppTextStyles.caption,
                                       ),
                                     ),
-                                    if (a.status == ApplicationStatus.pending) ...[
-                                      const SizedBox(width: 12),
+                                    if (a.status ==
+                                        ApplicationStatus.pending) ...[
+                                      const SizedBox(width: AppSpacing.md),
                                       OutlinedButton(
-                                        onPressed: () => _confirmCancel(context, a.id),
+                                        onPressed: () =>
+                                            _confirmCancel(context, a.id),
                                         style: OutlinedButton.styleFrom(
-                                          foregroundColor: Colors.red,
-                                          side: const BorderSide(color: Colors.red),
-                                          minimumSize: const Size(0, 40),
-                                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                                          foregroundColor: AppColors.danger,
+                                          side: const BorderSide(
+                                            color: AppColors.danger,
+                                          ),
+                                          minimumSize: const Size(
+                                            0,
+                                            AppSpacing.minTouchTarget,
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: AppSpacing.lg,
+                                          ),
                                           shape: const StadiumBorder(),
-                                          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                          textStyle: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
                                         child: const Text('Cancel'),
                                       ),
                                     ],
                                   ],
                                 ),
-                                if (a.status == ApplicationStatus.hired && employer != null) ...[
+                                if (a.status == ApplicationStatus.hired &&
+                                    employer != null) ...[
                                   const SizedBox(height: AppSpacing.md),
-                                  if (app.hasReviewed(seekerId, employer.id, a.jobId))
+                                  if (app.hasReviewed(
+                                    seekerId,
+                                    employer.id,
+                                    a.jobId,
+                                  ))
                                     Container(
-                                      height: 48,
+                                      height: AppSpacing.minTouchTarget,
                                       alignment: Alignment.center,
                                       decoration: BoxDecoration(
                                         color: AppColors.inputFill,
-                                        borderRadius: BorderRadius.circular(999),
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
                                       ),
                                       child: const Text(
                                         'Rated ✓',
-                                        style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                                        style: TextStyle(
+                                          color: AppColors.textSecondary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     )
                                   else
                                     SizedBox(
                                       width: double.infinity,
                                       child: OutlinedButton(
-                                        onPressed: () => _rateEmployer(context, employer, a.jobId),
+                                        onPressed: () => _rateEmployer(
+                                          context,
+                                          employer,
+                                          a.jobId,
+                                        ),
                                         child: const Text('Rate Employer'),
                                       ),
                                     ),

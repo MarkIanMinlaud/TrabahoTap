@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="trabahotap"
+        android:label="TrabahoTap"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

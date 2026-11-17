@@ -5,6 +5,7 @@ import '../models/app_user.dart';
 import '../models/application.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/empty_state.dart';
 import 'job_detail_screen.dart';
 
 class AlertsScreen extends StatelessWidget {
@@ -30,11 +31,14 @@ class AlertsScreen extends StatelessWidget {
     if (user != null && user.role == UserRole.employer) {
       for (final review in app.reviewsFor(user.id)) {
         final reviewer = app.userById(review.fromUserId);
-        items.add(_AlertItem(
-          title: '${reviewer?.name ?? 'Someone'} rated you ${review.stars} stars for ${app.jobTitle(review.jobId)}',
-          date: review.createdAt,
-          jobId: review.jobId,
-        ));
+        items.add(
+          _AlertItem(
+            title:
+                '${reviewer?.name ?? 'Someone'} rated you ${review.stars} stars for ${app.jobTitle(review.jobId)}',
+            date: review.createdAt,
+            jobId: review.jobId,
+          ),
+        );
       }
     } else if (user != null) {
       final apps = app.applicationsForSeeker(user.id);
@@ -42,30 +46,39 @@ class AlertsScreen extends StatelessWidget {
       for (final a in apps) {
         final job = app.jobById(a.jobId);
         if (job == null) continue;
-        items.add(_AlertItem(
-          title: _messageFor(a.status, job.title),
-          date: a.appliedAt,
-          jobId: job.id,
-        ));
+        items.add(
+          _AlertItem(
+            title: _messageFor(a.status, job.title),
+            date: a.appliedAt,
+            jobId: job.id,
+          ),
+        );
       }
       for (final inv in invites) {
         final job = app.jobById(inv.jobId);
         if (job == null) continue;
         final employer = app.userById(inv.employerId);
-        final name = employer?.businessName?.isNotEmpty == true ? employer!.businessName! : (employer?.name ?? 'An employer');
-        items.add(_AlertItem(
-          title: '$name invited you to apply for ${job.title}',
-          date: inv.createdAt,
-          jobId: job.id,
-        ));
+        final name = employer?.businessName?.isNotEmpty == true
+            ? employer!.businessName!
+            : (employer?.name ?? 'An employer');
+        items.add(
+          _AlertItem(
+            title: '$name invited you to apply for ${job.title}',
+            date: inv.createdAt,
+            jobId: job.id,
+          ),
+        );
       }
       for (final review in app.reviewsFor(user.id)) {
         final reviewer = app.userById(review.fromUserId);
-        items.add(_AlertItem(
-          title: '${reviewer?.name ?? 'Someone'} rated you ${review.stars} stars for ${app.jobTitle(review.jobId)}',
-          date: review.createdAt,
-          jobId: review.jobId,
-        ));
+        items.add(
+          _AlertItem(
+            title:
+                '${reviewer?.name ?? 'Someone'} rated you ${review.stars} stars for ${app.jobTitle(review.jobId)}',
+            date: review.createdAt,
+            jobId: review.jobId,
+          ),
+        );
       }
     }
 
@@ -73,43 +86,56 @@ class AlertsScreen extends StatelessWidget {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Alerts', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.text)),
-            const SizedBox(height: 16),
+            const Text('Alerts', style: AppTextStyles.pageTitle),
+            const SizedBox(height: AppSpacing.lg),
             Expanded(
               child: items.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.notifications_none, size: 48, color: AppColors.textSecondary),
-                          SizedBox(height: 8),
-                          Text('No alerts yet', style: TextStyle(color: AppColors.textSecondary)),
-                        ],
-                      ),
+                  ? const EmptyState(
+                      icon: Icons.notifications_none,
+                      message: 'No alerts yet',
+                      subtitle:
+                          'Updates about your applications will appear here.',
                     )
                   : ListView.separated(
                       itemCount: items.length,
-                      separatorBuilder: (_, index) => const SizedBox(height: 8),
+                      separatorBuilder: (_, index) =>
+                          const SizedBox(height: AppSpacing.sm),
                       itemBuilder: (context, i) {
                         final item = items[i];
-                        final matches = app.jobs.where((j) => j.id == item.jobId).toList();
+                        final matches = app.jobs
+                            .where((j) => j.id == item.jobId)
+                            .toList();
                         return ListTile(
                           tileColor: AppColors.cream,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.inputRadius,
+                            ),
+                          ),
                           leading: const CircleAvatar(
                             backgroundColor: AppColors.primary,
-                            child: Icon(Icons.notifications, color: AppColors.text),
+                            child: Icon(
+                              Icons.notifications,
+                              color: AppColors.text,
+                            ),
                           ),
-                          title: Text(item.title),
+                          title: Text(
+                            item.title,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                           onTap: matches.isEmpty
                               ? null
                               : () {
                                   Navigator.of(context).push(
-                                    MaterialPageRoute(builder: (_) => JobDetailScreen(job: matches.first)),
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          JobDetailScreen(job: matches.first),
+                                    ),
                                   );
                                 },
                         );

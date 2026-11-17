@@ -10,7 +10,7 @@ Future<bool> showDeleteJobDialog(
 }) async {
   final result = await showDialog<bool>(
     context: context,
-    barrierColor: Colors.black54,
+    barrierColor: AppColors.overlay,
     builder: (ctx) {
       final applications = applicantCount == 1 ? 'application' : 'applications';
       final message = StringBuffer(
@@ -30,13 +30,17 @@ Future<bool> showDeleteJobDialog(
             const CircleAvatar(
               radius: 32,
               backgroundColor: AppColors.danger,
-              child: Icon(Icons.delete_outline, color: Colors.white, size: 32),
+              child: Icon(
+                Icons.delete_outline,
+                color: AppColors.background,
+                size: 32,
+              ),
             ),
             const SizedBox(height: AppSpacing.md),
             const Text(
               'Delete this job?',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: AppTextStyles.dialogTitle,
             ),
           ],
         ),
@@ -59,8 +63,8 @@ Future<bool> showDeleteJobDialog(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.danger,
-              foregroundColor: Colors.white,
-              minimumSize: const Size(0, 48),
+              foregroundColor: AppColors.background,
+              minimumSize: const Size(0, AppSpacing.minTouchTarget),
             ),
             child: const Text('Delete'),
           ),

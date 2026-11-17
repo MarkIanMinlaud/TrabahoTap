@@ -31,12 +31,12 @@ class TalentCard extends StatelessWidget {
     final skills = seeker.skills.take(3).toList();
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppSpacing.radius),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -45,10 +45,13 @@ class TalentCard extends StatelessWidget {
                 backgroundColor: AppColors.primary,
                 child: Text(
                   _initials(seeker.name),
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.text),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.text,
+                  ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,48 +61,65 @@ class TalentCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             seeker.name,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.cardTitle,
                           ),
                         ),
-                        if (seeker.openToWork)
+                        if (seeker.openToWork) ...[
+                          const SizedBox(width: AppSpacing.sm),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xs,
+                            ),
                             decoration: BoxDecoration(
-                              color: Colors.green,
+                              color: AppColors.success,
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: const Text(
                               'Open to Work',
-                              style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                color: AppColors.background,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
+                        ],
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppSpacing.xs),
                     Text(
                       seeker.bio.isEmpty ? 'No bio yet' : seeker.bio,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: AppColors.textSecondary),
+                      style: AppTextStyles.hint,
                     ),
                     if (skills.isNotEmpty) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
+                        spacing: AppSpacing.xs,
+                        runSpacing: AppSpacing.xs,
                         children: skills
-                            .map((s) => Chip(
-                                  label: Text(s, style: const TextStyle(fontSize: 12)),
-                                  backgroundColor: AppColors.cream,
-                                  side: BorderSide.none,
-                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  padding: EdgeInsets.zero,
-                                  visualDensity: VisualDensity.compact,
-                                ))
+                            .map(
+                              (s) => Chip(
+                                label: Text(
+                                  s,
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                backgroundColor: AppColors.cream,
+                                side: BorderSide.none,
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                padding: EdgeInsets.zero,
+                                visualDensity: VisualDensity.compact,
+                              ),
+                            )
                             .toList(),
                       ),
                     ],
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
                     StarRating(rating: avg, count: count),
                   ],
                 ),

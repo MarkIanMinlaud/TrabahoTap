@@ -37,7 +37,9 @@ class Review {
       jobId: json['jobId'] as String? ?? '',
       stars: json['stars'] as int,
       comment: json['comment'] as String? ?? '',
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+          DateTime.now(),
     );
   }
 }

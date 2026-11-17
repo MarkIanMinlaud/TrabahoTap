@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../models/app_user.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/empty_state.dart';
 import '../widgets/star_rating.dart';
 import 'login_screen.dart';
 
@@ -169,20 +170,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.xl,
+          AppSpacing.xl,
+          AppSpacing.xl + MediaQuery.viewInsetsOf(context).bottom,
+        ),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Profile',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.text,
-                ),
-              ),
+              const Text('Profile', style: AppTextStyles.pageTitle),
               const SizedBox(height: AppSpacing.xl),
               Center(
                 child: Column(
@@ -242,11 +242,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: AppSpacing.xl),
               Text(
                 isSeeker ? 'Edit Profile' : 'Business Details',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.text,
-                ),
+                style: AppTextStyles.sectionTitle,
               ),
               const SizedBox(height: AppSpacing.md),
               if (isSeeker) ...[
@@ -300,6 +296,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ],
                 ),
+                if (_skills.isEmpty) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  const EmptyState(
+                    icon: Icons.auto_awesome,
+                    message: 'No skills added yet',
+                    subtitle: 'Add skills so employers can find you.',
+                    compact: true,
+                  ),
+                ],
                 if (_skills.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.sm),
                   Wrap(
@@ -400,6 +405,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Expanded(
                                 child: Text(
                                   _resumeFileName!,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(color: AppColors.text),
                                 ),
                               ),
@@ -466,37 +473,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: AppSpacing.xxl),
-              const Text(
-                'Reviews received',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.text,
-                ),
-              ),
+              const Text('Reviews received', style: AppTextStyles.sectionTitle),
               const SizedBox(height: AppSpacing.md),
               if (reviews.isEmpty)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  decoration: BoxDecoration(
-                    color: AppColors.cream,
-                    borderRadius: BorderRadius.circular(AppSpacing.radius),
-                  ),
-                  child: const Column(
-                    children: [
-                      Icon(
-                        Icons.star_border,
-                        color: AppColors.textSecondary,
-                        size: 32,
-                      ),
-                      SizedBox(height: AppSpacing.sm),
-                      Text(
-                        'No reviews yet',
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
-                    ],
-                  ),
+                const EmptyState(
+                  icon: Icons.star_border,
+                  message: 'No reviews yet',
+                  subtitle: 'Reviews appear after you are marked Hired.',
+                  compact: true,
                 )
               else
                 ...reviews.map((review) {

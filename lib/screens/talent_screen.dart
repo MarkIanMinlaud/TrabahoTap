@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/empty_state.dart';
 import '../widgets/talent_card.dart';
 import 'talent_detail_screen.dart';
 
@@ -23,15 +24,12 @@ class _TalentScreenState extends State<TalentScreen> {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Find trusted workers',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.text),
-            ),
-            const SizedBox(height: 12),
+            const Text('Find trusted workers', style: AppTextStyles.pageTitle),
+            const SizedBox(height: AppSpacing.md),
             TextField(
               decoration: const InputDecoration(
                 hintText: 'Search by name or skill',
@@ -39,20 +37,17 @@ class _TalentScreenState extends State<TalentScreen> {
               ),
               onChanged: (v) => setState(() => _query = v),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             Expanded(
               child: talent.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.people_outline, size: 48, color: AppColors.textSecondary),
-                          SizedBox(height: 8),
-                          Text('No workers found', style: TextStyle(color: AppColors.textSecondary)),
-                        ],
-                      ),
+                  ? const EmptyState(
+                      icon: Icons.people_outline,
+                      message: 'No workers found',
+                      subtitle: 'Try another name or skill.',
                     )
                   : ListView.builder(
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
                       itemCount: talent.length,
                       itemBuilder: (context, i) {
                         final seeker = talent[i];
@@ -61,7 +56,10 @@ class _TalentScreenState extends State<TalentScreen> {
                           app: app,
                           onTap: () {
                             Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => TalentDetailScreen(seekerId: seeker.id)),
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    TalentDetailScreen(seekerId: seeker.id),
+                              ),
                             );
                           },
                         );

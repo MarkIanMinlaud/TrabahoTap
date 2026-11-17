@@ -9,17 +9,16 @@ class JobStatusChip extends StatelessWidget {
   final Job job;
   final int hiredCount;
 
-  const JobStatusChip({
-    super.key,
-    required this.job,
-    required this.hiredCount,
-  });
+  const JobStatusChip({super.key, required this.job, required this.hiredCount});
 
   @override
   Widget build(BuildContext context) {
     final full = job.isFull;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
       decoration: BoxDecoration(
         color: full ? AppColors.inputFill : AppColors.successSoft,
         borderRadius: BorderRadius.circular(999),
@@ -48,9 +47,7 @@ class JobFullToggleButton extends StatelessWidget {
     if (!context.mounted) return;
     if (!updated) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(wasFull ? 'Job reopened' : 'Job marked as full'),
-      ),
+      SnackBar(content: Text(wasFull ? 'Job reopened' : 'Job marked as full')),
     );
   }
 
@@ -58,12 +55,12 @@ class JobFullToggleButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 48,
+      height: AppSpacing.minTouchTarget,
       child: OutlinedButton(
         onPressed: () => _toggle(context),
         style: OutlinedButton.styleFrom(
-          minimumSize: const Size.fromHeight(48),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          minimumSize: const Size.fromHeight(AppSpacing.minTouchTarget),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
         ),
         child: Text(job.isFull ? 'Reopen' : 'Mark as Full'),
       ),

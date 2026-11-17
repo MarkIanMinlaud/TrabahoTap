@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
+import '../models/app_user.dart';
 import '../models/application.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
@@ -81,6 +82,26 @@ class ApplicationsScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _rateEmployer(BuildContext context, AppUser employer, String jobId) async {
+    final app = context.read<AppProvider>();
+    final reviewer = app.currentUser;
+    if (reviewer == null) return;
+
+    final result = await showRatingSheet(context, toUser: employer, jobId: jobId);
+    if (result == null || !context.mounted) return;
+
+    await app.addReview(
+      fromUserId: reviewer.id,
+      toUserId: employer.id,
+      jobId: jobId,
+      stars: result.stars,
+      comment: result.comment,
+    );
+
+    if (!context.mounted) return;
+    await showReviewThanksDialog(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     final app = context.watch<AppProvider>();
@@ -110,10 +131,10 @@ class ApplicationsScreen extends StatelessWidget {
                     )
                   : ListView.builder(
                       itemCount: apps.length,
-                      itemBuilder: (context, i) {
+                      itemBuilder: (itemContext, i) {
                         final a = apps[i];
-                        final job = app.jobs.firstWhere((j) => j.id == a.jobId, orElse: () => app.jobs.first);
-                        final employer = app.employerFor(job);
+                        final job = app.jobById(a.jobId);
+                        final employer = job == null ? null : app.employerFor(job);
                         return Card(
                           margin: const EdgeInsets.only(bottom: 12),
                           child: Padding(
@@ -127,7 +148,7 @@ class ApplicationsScreen extends StatelessWidget {
                                     CircleAvatar(
                                       radius: 24,
                                       backgroundColor: AppColors.primary,
-                                      child: Icon(_iconForCategory(job.category), color: AppColors.text),
+                                      child: Icon(_iconForCategory(job?.category ?? ''), color: AppColors.text),
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
@@ -135,7 +156,7 @@ class ApplicationsScreen extends StatelessWidget {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            job.title,
+                                            job?.title ?? 'Deleted job',
                                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text),
                                           ),
                                           const SizedBox(height: 4),
@@ -208,7 +229,7 @@ class ApplicationsScreen extends StatelessWidget {
                                     SizedBox(
                                       width: double.infinity,
                                       child: OutlinedButton(
-                                        onPressed: () => showRatingDialog(context, toUser: employer, jobId: a.jobId),
+                                        onPressed: () => _rateEmployer(context, employer, a.jobId),
                                         child: const Text('Rate Employer'),
                                       ),
                                     ),

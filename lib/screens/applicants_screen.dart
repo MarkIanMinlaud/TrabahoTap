@@ -1,9 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
+import '../models/app_user.dart';
 import '../models/application.dart';
+import '../models/job.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/delete_job_dialog.dart';
 import '../widgets/star_rating.dart';
 import 'rating_dialog.dart';
 import 'talent_detail_screen.dart';
@@ -49,21 +52,78 @@ class ApplicantsScreen extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
+  Future<void> _confirmDelete(
+    BuildContext context,
+    Job job,
+    List<Application> applicants,
+  ) async {
+    final hasHired = applicants.any((a) => a.status == ApplicationStatus.hired);
+    final confirmed = await showDeleteJobDialog(
+      context,
+      applicantCount: applicants.length,
+      hasHired: hasHired,
+    );
+    if (!confirmed || !context.mounted) return;
+
+    final app = context.read<AppProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+
+    await app.deleteJob(job.id);
+    if (!context.mounted) return;
+    navigator.pop();
+    messenger.showSnackBar(const SnackBar(content: Text('Job deleted')));
+  }
+
+  Future<void> _rateApplicant(BuildContext context, AppUser seeker) async {
+    final app = context.read<AppProvider>();
+    final reviewer = app.currentUser;
+    if (reviewer == null) return;
+
+    final result = await showRatingSheet(context, toUser: seeker, jobId: jobId);
+    if (result == null || !context.mounted) return;
+
+    await app.addReview(
+      fromUserId: reviewer.id,
+      toUserId: seeker.id,
+      jobId: jobId,
+      stars: result.stars,
+      comment: result.comment,
+    );
+
+    if (!context.mounted) return;
+    await showReviewThanksDialog(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     final app = context.watch<AppProvider>();
-    final job = app.jobs.firstWhere((j) => j.id == jobId);
+    final job = app.jobById(jobId);
     final applicants = app.applicantsForJob(jobId);
     final reviewerId = app.currentUser?.id ?? '';
 
     return Scaffold(
-      appBar: AppBar(leading: const BackButton(), title: Text(job.title)),
+      appBar: AppBar(
+        leading: const BackButton(),
+        title: Text(job?.title ?? 'Deleted job'),
+        actions: [
+          if (job != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: IconButton(
+                tooltip: 'Delete job',
+                onPressed: () => _confirmDelete(context, job, applicants),
+                icon: const Icon(Icons.delete_outline, color: AppColors.danger),
+              ),
+            ),
+        ],
+      ),
       body: applicants.isEmpty
           ? const Center(child: Text('No applicants yet', style: TextStyle(color: AppColors.textSecondary)))
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: applicants.length,
-              itemBuilder: (context, i) {
+              itemBuilder: (itemContext, i) {
                 final a = applicants[i];
                 final seeker = app.userById(a.seekerId);
                 if (seeker == null) return const SizedBox.shrink();
@@ -76,7 +136,7 @@ class ApplicantsScreen extends StatelessWidget {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(16),
                     onTap: () {
-                      Navigator.of(context).push(
+                      Navigator.of(itemContext).push(
                         MaterialPageRoute(builder: (_) => TalentDetailScreen(seekerId: seeker.id)),
                       );
                     },
@@ -176,7 +236,7 @@ class ApplicantsScreen extends StatelessWidget {
                               SizedBox(
                                 width: double.infinity,
                                 child: OutlinedButton(
-                                  onPressed: () => showRatingDialog(context, toUser: seeker, jobId: jobId),
+                                  onPressed: () => _rateApplicant(context, seeker),
                                   child: const Text('Rate Worker'),
                                 ),
                               ),

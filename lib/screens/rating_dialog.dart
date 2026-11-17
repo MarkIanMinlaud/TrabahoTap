@@ -6,22 +6,26 @@ import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/star_input.dart';
 
-Future<void> showRatingDialog(
+class RatingResult {
+  final int stars;
+  final String comment;
+
+  const RatingResult({required this.stars, required this.comment});
+}
+
+/// Opens the rating sheet and returns the chosen rating, or null if cancelled.
+/// The caller is responsible for saving the review and showing the dialog.
+Future<RatingResult?> showRatingSheet(
   BuildContext context, {
   required AppUser toUser,
   required String jobId,
 }) async {
   final app = context.read<AppProvider>();
   final reviewer = app.currentUser;
-  if (reviewer == null) return;
-  if (app.hasReviewed(reviewer.id, toUser.id, jobId)) return;
+  if (reviewer == null) return null;
+  if (app.hasReviewed(reviewer.id, toUser.id, jobId)) return null;
 
-  var stars = 0;
-  var submitted = false;
-  var comment = '';
-  final commentController = TextEditingController();
-
-  await showModalBottomSheet<void>(
+  return showModalBottomSheet<RatingResult>(
     context: context,
     isScrollControlled: true,
     backgroundColor: AppColors.background,
@@ -30,84 +34,103 @@ Future<void> showRatingDialog(
         top: Radius.circular(AppSpacing.radius),
       ),
     ),
-    builder: (ctx) => StatefulBuilder(
-      builder: (ctx, setSheetState) => SafeArea(
-        top: false,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            AppSpacing.xl,
-            AppSpacing.xl,
-            AppSpacing.xl,
-            AppSpacing.xl + MediaQuery.viewInsetsOf(ctx).bottom,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Rate ${toUser.name}',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.text,
-                ),
+    builder: (_) => RatingSheet(name: toUser.name),
+  );
+}
+
+class RatingSheet extends StatefulWidget {
+  final String name;
+
+  const RatingSheet({super.key, required this.name});
+
+  @override
+  State<RatingSheet> createState() => _RatingSheetState();
+}
+
+class _RatingSheetState extends State<RatingSheet> {
+  final TextEditingController _commentController = TextEditingController();
+  int _stars = 0;
+  bool _submitted = false;
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (_submitted) return;
+    if (_stars == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please choose a star rating')),
+      );
+      return;
+    }
+    _submitted = true;
+    Navigator.of(context).pop(
+      RatingResult(
+        stars: _stars,
+        comment: _commentController.text.trim(),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.xl,
+          AppSpacing.xl,
+          AppSpacing.xl + MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Rate ${widget.name}',
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppColors.text,
               ),
-              const SizedBox(height: AppSpacing.lg),
-              Center(
-                child: StarInput(
-                  value: stars,
-                  onChanged: (value) => setSheetState(() => stars = value),
-                ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Center(
+              child: StarInput(
+                value: _stars,
+                onChanged: (value) => setState(() => _stars = value),
               ),
-              const SizedBox(height: AppSpacing.lg),
-              TextField(
-                controller: commentController,
-                minLines: 3,
-                maxLines: 5,
-                decoration: const InputDecoration(
-                  hintText: 'Share your experience',
-                ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            TextField(
+              controller: _commentController,
+              minLines: 3,
+              maxLines: 5,
+              decoration: const InputDecoration(
+                hintText: 'Share your experience',
               ),
-              const SizedBox(height: AppSpacing.xl),
-              ElevatedButton(
-                onPressed: () {
-                  if (stars == 0) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(
-                      const SnackBar(
-                        content: Text('Please choose a star rating'),
-                      ),
-                    );
-                    return;
-                  }
-                  submitted = true;
-                  comment = commentController.text.trim();
-                  Navigator.of(ctx).pop();
-                },
-                child: const Text('Submit Review'),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            ElevatedButton(
+              onPressed: _submit,
+              child: const Text('Submit Review'),
+            ),
+          ],
         ),
       ),
-    ),
-  );
+    );
+  }
+}
 
-  commentController.dispose();
-  if (!submitted) return;
-
-  await app.addReview(
-    fromUserId: reviewer.id,
-    toUserId: toUser.id,
-    jobId: jobId,
-    stars: stars,
-    comment: comment,
-  );
-
-  if (!context.mounted) return;
-  await showDialog<void>(
+Future<void> showReviewThanksDialog(BuildContext context) {
+  return showDialog<void>(
     context: context,
     barrierColor: Colors.black54,
-    builder: (ctx) => Dialog(
+    builder: (dialogContext) => Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radius),
       ),
@@ -133,7 +156,7 @@ Future<void> showRatingDialog(
             ),
             const SizedBox(height: AppSpacing.lg),
             ElevatedButton(
-              onPressed: () => Navigator.of(ctx).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('OK'),
             ),
           ],

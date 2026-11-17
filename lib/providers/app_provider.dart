@@ -66,6 +66,17 @@ class AppProvider extends ChangeNotifier {
     return userById(job.employerId);
   }
 
+  Job? jobById(String jobId) {
+    for (final j in jobs) {
+      if (j.id == jobId) return j;
+    }
+    return null;
+  }
+
+  String jobTitle(String jobId) {
+    return jobById(jobId)?.title ?? 'Deleted job';
+  }
+
   bool hasApplied(String seekerId, String jobId) {
     return applications.any(
       (a) => a.seekerId == seekerId && a.jobId == jobId,
@@ -135,6 +146,22 @@ class AppProvider extends ChangeNotifier {
     jobs.add(job);
     await saveData();
     notifyListeners();
+  }
+
+  // Delete a job only if the current user owns it.
+  Future<bool> deleteJob(String jobId) async {
+    final user = currentUser;
+    if (user == null) return false;
+    final job = jobById(jobId);
+    if (job == null || job.employerId != user.id) return false;
+
+    jobs.removeWhere((j) => j.id == jobId);
+    applications.removeWhere((a) => a.jobId == jobId);
+    invites.removeWhere((i) => i.jobId == jobId);
+    // Reviews are kept on purpose so ratings stay on user profiles.
+    await saveData();
+    notifyListeners();
+    return true;
   }
 
   Future<void> updateApplicationStatus(String applicationId, ApplicationStatus status) async {

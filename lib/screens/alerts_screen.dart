@@ -31,7 +31,7 @@ class AlertsScreen extends StatelessWidget {
       for (final review in app.reviewsFor(user.id)) {
         final reviewer = app.userById(review.fromUserId);
         items.add(_AlertItem(
-          title: '${reviewer?.name ?? 'Someone'} rated you ${review.stars} stars',
+          title: '${reviewer?.name ?? 'Someone'} rated you ${review.stars} stars for ${app.jobTitle(review.jobId)}',
           date: review.createdAt,
           jobId: review.jobId,
         ));
@@ -39,28 +39,30 @@ class AlertsScreen extends StatelessWidget {
     } else if (user != null) {
       final apps = app.applicationsForSeeker(user.id);
       final invites = app.invitesForSeeker(user.id);
-      items.addAll(apps.map((a) {
-        final job = app.jobs.firstWhere((j) => j.id == a.jobId, orElse: () => app.jobs.first);
-        return _AlertItem(
+      for (final a in apps) {
+        final job = app.jobById(a.jobId);
+        if (job == null) continue;
+        items.add(_AlertItem(
           title: _messageFor(a.status, job.title),
           date: a.appliedAt,
           jobId: job.id,
-        );
-      }));
-      items.addAll(invites.map((inv) {
-        final job = app.jobs.firstWhere((j) => j.id == inv.jobId, orElse: () => app.jobs.first);
+        ));
+      }
+      for (final inv in invites) {
+        final job = app.jobById(inv.jobId);
+        if (job == null) continue;
         final employer = app.userById(inv.employerId);
         final name = employer?.businessName?.isNotEmpty == true ? employer!.businessName! : (employer?.name ?? 'An employer');
-        return _AlertItem(
+        items.add(_AlertItem(
           title: '$name invited you to apply for ${job.title}',
           date: inv.createdAt,
           jobId: job.id,
-        );
-      }));
+        ));
+      }
       for (final review in app.reviewsFor(user.id)) {
         final reviewer = app.userById(review.fromUserId);
         items.add(_AlertItem(
-          title: '${reviewer?.name ?? 'Someone'} rated you ${review.stars} stars',
+          title: '${reviewer?.name ?? 'Someone'} rated you ${review.stars} stars for ${app.jobTitle(review.jobId)}',
           date: review.createdAt,
           jobId: review.jobId,
         ));

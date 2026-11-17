@@ -1,10 +1,12 @@
 ﻿import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
+import '../models/app_user.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
 import 'home_placeholder_screen.dart';
 import 'role_select_screen.dart';
+import 'seeker_shell.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -38,8 +40,12 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _error = err);
       return;
     }
+    final user = context.read<AppProvider>().currentUser;
+    final next = user?.role == UserRole.seeker
+        ? const SeekerShell()
+        : const HomePlaceholderScreen();
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const HomePlaceholderScreen()),
+      MaterialPageRoute(builder: (_) => next),
       (route) => false,
     );
   }

@@ -3,11 +3,13 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
+import '../models/app_user.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
 import 'home_placeholder_screen.dart';
 import 'onboarding_screen.dart';
 import 'role_select_screen.dart';
+import 'seeker_shell.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -30,7 +32,9 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!app.hasSeenOnboarding) {
       next = const OnboardingScreen();
     } else if (app.currentUser != null) {
-      next = const HomePlaceholderScreen();
+      next = app.currentUser!.role == UserRole.seeker
+          ? const SeekerShell()
+          : const HomePlaceholderScreen();
     } else {
       next = const RoleSelectScreen();
     }

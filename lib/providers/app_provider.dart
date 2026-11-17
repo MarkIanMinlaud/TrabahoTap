@@ -34,6 +34,50 @@ class AppProvider extends ChangeNotifier {
     return total / userReviews.length;
   }
 
+  int reviewCountFor(String userId) {
+    return reviews.where((r) => r.toUserId == userId).length;
+  }
+
+  AppUser? userById(String id) {
+    for (final u in users) {
+      if (u.id == id) return u;
+    }
+    return null;
+  }
+
+  AppUser? employerFor(Job job) {
+    return userById(job.employerId);
+  }
+
+  bool hasApplied(String seekerId, String jobId) {
+    return applications.any(
+      (a) => a.seekerId == seekerId && a.jobId == jobId,
+    );
+  }
+
+  List<Application> applicationsForSeeker(String seekerId) {
+    return applications.where((a) => a.seekerId == seekerId).toList().reversed.toList();
+  }
+
+  Future<void> applyToJob(String seekerId, String jobId) async {
+    if (hasApplied(seekerId, jobId)) return;
+    final app = Application(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      jobId: jobId,
+      seekerId: seekerId,
+      status: ApplicationStatus.pending,
+    );
+    applications.add(app);
+    await saveData();
+    notifyListeners();
+  }
+
+  Future<void> cancelApplication(String applicationId) async {
+    applications.removeWhere((a) => a.id == applicationId);
+    await saveData();
+    notifyListeners();
+  }
+
   Future<void> loadData() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_storageKey);

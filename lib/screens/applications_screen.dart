@@ -30,6 +30,39 @@ class ApplicationsScreen extends StatelessWidget {
     }
   }
 
+  IconData _iconForCategory(String category) {
+    switch (category) {
+      case 'Construction':
+        return Icons.construction;
+      case 'Delivery':
+      case 'Logistics':
+        return Icons.local_shipping;
+      case 'Tutoring':
+        return Icons.school;
+      case 'Household':
+      case 'Cleaning':
+        return Icons.cleaning_services;
+      case 'Farming':
+        return Icons.agriculture;
+      case 'Food Service':
+        return Icons.restaurant;
+      case 'Retail':
+        return Icons.storefront;
+      case 'Repair':
+        return Icons.build;
+      default:
+        return Icons.work;
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  }
+
   Future<void> _confirmCancel(BuildContext context, String id) async {
     final ok = await showDialog<bool>(
       context: context,
@@ -81,31 +114,79 @@ class ApplicationsScreen extends StatelessWidget {
                         final employer = app.employerFor(job);
                         return Card(
                           margin: const EdgeInsets.only(bottom: 12),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.all(16),
-                            title: Text(job.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: Text(employer?.businessName ?? employer?.name ?? 'Employer'),
-                            ),
-                            trailing: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Chip(
-                                  label: Text(
-                                    _statusLabel(a.status),
-                                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                                  ),
-                                  backgroundColor: _statusColor(a.status),
-                                  side: BorderSide.none,
-                                  padding: EdgeInsets.zero,
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 24,
+                                      backgroundColor: AppColors.primary,
+                                      child: Icon(_iconForCategory(job.category), color: AppColors.text),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            job.title,
+                                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            employer?.businessName ?? employer?.name ?? 'Employer',
+                                            style: const TextStyle(color: AppColors.textSecondary),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: _statusColor(a.status),
+                                        borderRadius: BorderRadius.circular(999),
+                                      ),
+                                      child: Text(
+                                        _statusLabel(a.status),
+                                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                if (a.status == ApplicationStatus.pending)
-                                  GestureDetector(
-                                    onTap: () => _confirmCancel(context, a.id),
-                                    child: const Text('Cancel', style: TextStyle(color: Colors.red, fontSize: 12)),
-                                  ),
+                                const SizedBox(height: 12),
+                                const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        'Applied ${_formatDate(a.appliedAt)}',
+                                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                      ),
+                                    ),
+                                    if (a.status == ApplicationStatus.pending) ...[
+                                      const SizedBox(width: 12),
+                                      OutlinedButton(
+                                        onPressed: () => _confirmCancel(context, a.id),
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: Colors.red,
+                                          side: const BorderSide(color: Colors.red),
+                                          minimumSize: const Size(0, 40),
+                                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                                          shape: const StadiumBorder(),
+                                          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        child: const Text('Cancel'),
+                                      ),
+                                    ],
+                                  ],
+                                ),
                               ],
                             ),
                           ),

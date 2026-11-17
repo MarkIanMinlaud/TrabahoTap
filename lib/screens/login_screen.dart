@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/app_user.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
-import 'home_placeholder_screen.dart';
+import 'employer_shell.dart';
 import 'role_select_screen.dart';
 import 'seeker_shell.dart';
 
@@ -43,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final user = context.read<AppProvider>().currentUser;
     final next = user?.role == UserRole.seeker
         ? const SeekerShell()
-        : const HomePlaceholderScreen();
+        : const EmployerShell();
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => next),
       (route) => false,

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/app_user.dart';
 import '../models/application.dart';
+import '../models/invite.dart';
 import '../models/job.dart';
 import '../models/review.dart';
 
@@ -15,6 +16,7 @@ class AppProvider extends ChangeNotifier {
   List<Job> jobs = [];
   List<Application> applications = [];
   List<Review> reviews = [];
+  List<Invite> invites = [];
   String? currentUserId;
   bool hasSeenOnboarding = false;
   bool isLoaded = false;
@@ -78,6 +80,81 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  List<AppUser> talentList({String query = ''}) {
+    final q = query.toLowerCase().trim();
+    return users.where((u) {
+      if (u.role != UserRole.seeker || !u.openToWork) return false;
+      if (q.isEmpty) return true;
+      final nameMatch = u.name.toLowerCase().contains(q);
+      final skillMatch = u.skills.any((s) => s.toLowerCase().contains(q));
+      return nameMatch || skillMatch;
+    }).toList();
+  }
+
+  List<Job> jobsForEmployer(String employerId) {
+    final list = jobs.where((j) => j.employerId == employerId).toList();
+    list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return list;
+  }
+
+  List<Application> applicantsForJob(String jobId) {
+    return applications.where((a) => a.jobId == jobId).toList().reversed.toList();
+  }
+
+  Future<void> postJob({
+    required String title,
+    required String category,
+    required String pay,
+    required String description,
+    required String employerId,
+  }) async {
+    final job = Job(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: title,
+      category: category,
+      pay: pay,
+      description: description,
+      employerId: employerId,
+      createdAt: DateTime.now(),
+    );
+    jobs.add(job);
+    await saveData();
+    notifyListeners();
+  }
+
+  Future<void> updateApplicationStatus(String applicationId, ApplicationStatus status) async {
+    final index = applications.indexWhere((a) => a.id == applicationId);
+    if (index == -1) return;
+    applications[index] = applications[index].copyWith(status: status);
+    await saveData();
+    notifyListeners();
+  }
+
+  Future<void> sendInvite({
+    required String jobId,
+    required String employerId,
+    required String seekerId,
+  }) async {
+    final invite = Invite(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      jobId: jobId,
+      employerId: employerId,
+      seekerId: seekerId,
+      createdAt: DateTime.now(),
+    );
+    invites.add(invite);
+    await saveData();
+    notifyListeners();
+  }
+
+  List<Invite> invitesForSeeker(String seekerId) {
+    return invites.where((i) => i.seekerId == seekerId).toList().reversed.toList();
+  }
+
+  List<Review> reviewsForUser(String userId) {
+    return reviews.where((r) => r.toUserId == userId).toList().reversed.toList();
+  }
+
   Future<void> loadData() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_storageKey);
@@ -95,6 +172,9 @@ class AppProvider extends ChangeNotifier {
             .toList();
         reviews = (data['reviews'] as List)
             .map((e) => Review.fromJson(e as Map<String, dynamic>))
+            .toList();
+        invites = (data['invites'] as List? ?? [])
+            .map((e) => Invite.fromJson(e as Map<String, dynamic>))
             .toList();
         currentUserId = data['currentUserId'] as String?;
         hasSeenOnboarding = data['hasSeenOnboarding'] as bool? ?? false;
@@ -116,6 +196,7 @@ class AppProvider extends ChangeNotifier {
       'jobs': jobs.map((e) => e.toJson()).toList(),
       'applications': applications.map((e) => e.toJson()).toList(),
       'reviews': reviews.map((e) => e.toJson()).toList(),
+      'invites': invites.map((e) => e.toJson()).toList(),
       'currentUserId': currentUserId,
       'hasSeenOnboarding': hasSeenOnboarding,
     };
@@ -423,11 +504,11 @@ class AppProvider extends ChangeNotifier {
     ];
 
     applications = [
-      Application(id: 'a1', jobId: 'j1', seekerId: 's1', status: ApplicationStatus.hired),
-      Application(id: 'a2', jobId: 'j4', seekerId: 's2', status: ApplicationStatus.pending),
-      Application(id: 'a3', jobId: 'j3', seekerId: 's3', status: ApplicationStatus.hired),
-      Application(id: 'a4', jobId: 'j5', seekerId: 's6', status: ApplicationStatus.rejected),
-      Application(id: 'a5', jobId: 'j2', seekerId: 's5', status: ApplicationStatus.pending),
+      Application(id: 'a1', jobId: 'j1', seekerId: 's1', status: ApplicationStatus.hired, appliedAt: DateTime(2026, 11, 3)),
+      Application(id: 'a2', jobId: 'j4', seekerId: 's2', status: ApplicationStatus.pending, appliedAt: DateTime(2026, 11, 12)),
+      Application(id: 'a3', jobId: 'j3', seekerId: 's3', status: ApplicationStatus.hired, appliedAt: DateTime(2026, 11, 5)),
+      Application(id: 'a4', jobId: 'j5', seekerId: 's6', status: ApplicationStatus.rejected, appliedAt: DateTime(2026, 11, 8)),
+      Application(id: 'a5', jobId: 'j2', seekerId: 's5', status: ApplicationStatus.pending, appliedAt: DateTime(2026, 11, 14)),
     ];
 
     reviews = [
@@ -453,6 +534,8 @@ class AppProvider extends ChangeNotifier {
         comment: 'Kind employer and fair pay.',
       ),
     ];
+
+    invites = [];
 
     currentUserId = null;
     hasSeenOnboarding = false;
